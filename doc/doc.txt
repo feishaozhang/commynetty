@@ -1,0 +1,25 @@
+粘包问题：
+1、消息定长，每个报文大小固定
+2、在包尾增加会车换行符进行分割
+3、将消息氛围消息头和消息体，消息头包含消息的总长度的字段。
+
+
+=======================================================
+一、解决分包方法1
+1、添加解码器
+socketChannel.pipeline().addLast(new LineBasedFrameDecoder(ClientConfiguration.LINE_BASE_FRAME_DECODER_SIZE));
+socketChannel.pipeline().addLast(new StringDecoder());
+
+2、修改ChannelRead方法
+@Override
+public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    String message = (String)msg;//Convert Object to ByteBuf
+    logger.info("Read msg: "+message);
+}
+
+3、发送的消息需要添加System.getProperty("line.separator")，否则无法分包
+ byte[] req =("Hello I'm message which from Client" + System.getProperty("line.separator")).getBytes();
+           firstMessage = Unpooled.buffer(req.length);
+           firstMessage.writeBytes(req);
+           ctx.writeAndFlush(firstMessage);
+=======================================================
