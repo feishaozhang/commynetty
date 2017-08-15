@@ -5,7 +5,7 @@
 
 
 =======================================================
-一、解决分包方法1
+一、解决分包方法1 line.separator分割
 1、添加解码器
 socketChannel.pipeline().addLast(new LineBasedFrameDecoder(ClientConfiguration.LINE_BASE_FRAME_DECODER_SIZE));
 socketChannel.pipeline().addLast(new StringDecoder());
@@ -23,3 +23,25 @@ public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception 
            firstMessage.writeBytes(req);
            ctx.writeAndFlush(firstMessage);
 =======================================================
+二、解决分包粘包方法2 特殊符号分包粘包
+Delimiter
+
+===========================================================
+三、解决分包粘包方法3 固定长度解码器，根据包固定长度进行解码
+FixedLengthFrameDecoder
+
+============================================================
+四ObjectInputStream & ObjectOutputStream可以直接把java对象作为可存储的字节数组写入文件
+也可以传输到网络上。序列化的目的：
+1、网络传输
+2、对象持久化
+
+1、Java自带的序列化无法跨语言
+2、Java序列化后的字节数组太大
+===========================================================
+Http请求由三部分组成：
+1、Http请求行
+2、Http消息头
+3、Http请求正文
+
+

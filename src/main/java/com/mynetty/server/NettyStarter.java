@@ -1,7 +1,9 @@
 package com.mynetty.server;
 
+import com.mynetty.client.channeInitializer.MsgpackChannelInitializer;
 import com.mynetty.exception.NettyServerException;
-import com.mynetty.server.handler.LineBasedFrameDecoderChildChannelHandler;
+import com.mynetty.server.channelHandler.FixedLengthBasedFrameDecoderChildChannelHandler;
+import com.mynetty.server.channelHandler.MsgpackChildChannelHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -39,7 +41,7 @@ public class NettyStarter {
             sbs.group(bossGroup,workGroup)
                     .channel(NioServerSocketChannel.class)
                     .option(ChannelOption.SO_BACKLOG, Configuration.SO_BACKLOG_SIZE)
-                    .childHandler(new LineBasedFrameDecoderChildChannelHandler());
+                    .childHandler(new MsgpackChildChannelHandler());
 
             //Asyn waiting util bind port success
             ChannelFuture f  = sbs.bind(port).sync();

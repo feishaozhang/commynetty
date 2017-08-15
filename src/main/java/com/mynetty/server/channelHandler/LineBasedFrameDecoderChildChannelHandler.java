@@ -1,6 +1,7 @@
-package com.mynetty.server.handler;
+package com.mynetty.server.channelHandler;
 
 import com.mynetty.server.Configuration;
+import com.mynetty.server.handler.LineBasedFrameDecoderServerHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LineBasedFrameDecoder;

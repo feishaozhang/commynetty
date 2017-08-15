@@ -1,6 +1,6 @@
 package com.mynetty.server.handler;
 
-import com.mynetty.server.Configuration;
+import com.mynetty.commom.msgpack.model.Message;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerAdapter;
@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
  * @version 1.0
  * LineBasedFrameDecoderServerHandler used to handle Data recept and transfer
  */
-public class DelimiterBasedFrameDecoderServerHandler extends ChannelHandlerAdapter{
+public class MsgpackServerHandler extends ChannelHandlerAdapter{
 
     private Logger logger = Logger.getLogger(this.getClass());
     /**
@@ -22,32 +22,13 @@ public class DelimiterBasedFrameDecoderServerHandler extends ChannelHandlerAdapt
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        String realMessage = decodeMessage(msg);
-        if(realMessage != null){
-            sendMessage(ctx,"server:Hi I'm server");
-        }
+        Message message = (Message)msg;//Convert Object to ByteBuf
+        logger.info("Read msg: "+message.getMessage());
+        sendMessage(ctx, message);
     }
 
-    /**
-     * used to decode ByteBuf to String
-     * @param msg ByteBuf
-     * @see ByteBuf
-     * @return String message
-     */
-    public String decodeMessage(Object msg){
-        if(msg != null) {
-            String message = (String) msg;
-            logger.info("Server receive message: " + message);
-            return message;
-        }
-        logger.info("Get a message");
-        return null;
-    }
-
-    public void sendMessage(ChannelHandlerContext ctx, String message){
-        message += Configuration.DELIMITER_DECODER_TAG;
-        ByteBuf responseByteBuf = Unpooled.copiedBuffer(message.getBytes());
-        ctx.write(responseByteBuf);
+    public void sendMessage(ChannelHandlerContext ctx, Object message){
+        ctx.write(message);
         logger.info("Server is writing message to log file");
     }
 

@@ -9,9 +9,11 @@ import org.apache.log4j.Logger;
 
 /**
  * @version 1.0
- * LineBasedFrameDecoderServerHandler used to handle Data recept and transfer
+ * 固定包长解码器，通过固定包长，用于解决分包粘包问题
+ * @author zsf
+ * @since  2017.8.14
  */
-public class DelimiterBasedFrameDecoderServerHandler extends ChannelHandlerAdapter{
+public class FixedLengthBasedFrameDecoderServerHandler extends ChannelHandlerAdapter{
 
     private Logger logger = Logger.getLogger(this.getClass());
     /**
