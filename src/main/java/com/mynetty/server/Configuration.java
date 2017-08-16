@@ -1,5 +1,8 @@
 package com.mynetty.server;
 
+/**
+ * 服务端配置文件
+ */
 public class Configuration {
 
     /**

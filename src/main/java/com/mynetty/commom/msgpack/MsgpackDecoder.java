@@ -1,6 +1,8 @@
 package com.mynetty.commom.msgpack;
 
+import com.mynetty.commom.msgpack.model.Header;
 import com.mynetty.commom.msgpack.model.Message;
+import com.mynetty.commom.msgpack.model.ProtocalMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
@@ -16,18 +18,34 @@ public class MsgpackDecoder extends MessageToMessageDecoder<ByteBuf>{
         array = new byte[length];
         byteBuf.getBytes(byteBuf.readerIndex(),array,0,length);
         MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(array);
+
+        Header header = decodeHeader(unpacker);
+        Message msg = getMessage(unpacker);
+
+        ProtocalMessage pMessage = new ProtocalMessage(header, msg);
+
+        list.add(pMessage);
+    }
+
+    public Header decodeHeader(MessageUnpacker unpacker)throws Exception{
+
+        //Decode Header
+        int crcCode = unpacker.unpackInt();
+        int bodyLength = unpacker.unpackInt();
+        Long sessionId = unpacker.unpackLong();
+        byte type = unpacker.unpackByte();
+        byte priority = unpacker.unpackByte();
+        Header header = new Header(crcCode,bodyLength, sessionId, type, priority);
+        return header;
+    }
+
+    public Message getMessage(MessageUnpacker unpacker)throws Exception{
+        //Decode Message
         Long from = unpacker.unpackLong();
         Long target = unpacker.unpackLong();
         String realMessage = unpacker.unpackString();
 
-        list.add(getMessage(from, target, realMessage));
-    }
-
-    public Message getMessage(Long from, Long target, String message){
-        Message msg = new Message();
-        msg.setFrom(from);
-        msg.setTarget(target);
-        msg.setMessage(message);
+        Message msg = new Message(from, target, realMessage);
         return msg;
     }
 }

@@ -11,6 +11,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import org.apache.log4j.Logger;
 
+/**
+ * 客户端启动程序
+ */
 public class Client {
     private Logger logger = Logger.getLogger(this.getClass());
 

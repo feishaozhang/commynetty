@@ -1,8 +1,5 @@
 package com.mynetty.commom.msgpack.model;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public final class Header {
     /**
      * netty消息校验码三部分
@@ -22,29 +19,27 @@ public final class Header {
     private long sessionID;//会话ID
     /**
      * 消息类型
-     * 0 业务请求消息
-     * 1 业务相应消息
-     * 2 握手请求消息
-     * 3 握手应答消息
-     * 4 心跳请求消息
-     * 5 心跳应答消息
+     * @see com.mynetty.commom.msgpack.messageEnum.MessageTypeEnum
      */
     private byte type;//消息类型
     /**
      * 消息优先级0~255
      */
     private byte priority;//消息优先级
-    /**
-     * 拓展消息头
-     */
-    private Map<String, Object> attachment = new HashMap<String, Object>();//附件
+
+    public Header() {
+    }
+
+    public Header(int crcCode, int length, long sessionID, byte type, byte priority) {
+        this.crcCode = crcCode;
+        this.length = length;
+        this.sessionID = sessionID;
+        this.type = type;
+        this.priority = priority;
+    }
 
     public int getCrcCode() {
         return crcCode;
-    }
-
-    public void setCrcCode(int crcCode) {
-        this.crcCode = crcCode;
     }
 
     public int getLength() {
@@ -79,11 +74,4 @@ public final class Header {
         this.priority = priority;
     }
 
-    public Map<String, Object> getAttachment() {
-        return attachment;
-    }
-
-    public void setAttachment(Map<String, Object> attachment) {
-        this.attachment = attachment;
-    }
 }

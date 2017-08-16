@@ -1,8 +1,19 @@
 package com.mynetty.commom.msgpack.model;
 
+/**
+ * 传输消息协议
+ */
 public class ProtocalMessage {
     private Header header;//消息头
-    private Object body;//消息体
+    private Message body;//消息体
+
+    public ProtocalMessage() {
+    }
+
+    public ProtocalMessage(Header header, Message body) {
+        this.header = header;
+        this.body = body;
+    }
 
     public Header getHeader() {
         return header;
@@ -12,11 +23,11 @@ public class ProtocalMessage {
         this.header = header;
     }
 
-    public Object getBody() {
+    public Message getBody() {
         return body;
     }
 
-    public void setBody(Object body) {
+    public void setBody(Message body) {
         this.body = body;
     }
 }

@@ -4,6 +4,9 @@ import com.mynetty.server.Configuration;
 import com.mynetty.engineerModule.BaseComponentStarter;
 import com.mynetty.server.NettyStarter;
 
+/**
+ * 服务端启动程序
+ */
 public class Engineer {
     public static void main(String[] args){
         NettyStarter nStarter = new NettyStarter();
