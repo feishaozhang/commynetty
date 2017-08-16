@@ -14,6 +14,7 @@ import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.codec.string.StringDecoder;
+import sun.plugin2.message.HeartbeatMessage;
 
 public class MsgpackChannelInitializer extends ChannelInitializer {
 
@@ -25,5 +26,6 @@ public class MsgpackChannelInitializer extends ChannelInitializer {
         socketChannel.pipeline().addLast("frameEncoder",new LengthFieldPrepender(2));
         socketChannel.pipeline().addLast("msgpack encoder", new MsgpackEncoder());
         socketChannel.pipeline().addLast(new MsgpackDecoderHandler());
+//        socketChannel.pipeline().addLast("HeartBeatHandler",);
     }
 }
