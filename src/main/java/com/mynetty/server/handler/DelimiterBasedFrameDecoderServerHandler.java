@@ -1,5 +1,6 @@
 package com.mynetty.server.handler;
 
+import com.mynetty.commom.msgpack.encoderTool.MessageSender;
 import com.mynetty.server.Configuration;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -24,7 +25,9 @@ public class DelimiterBasedFrameDecoderServerHandler extends ChannelHandlerAdapt
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         String realMessage = decodeMessage(msg);
         if(realMessage != null){
-            sendMessage(ctx,"server:Hi I'm server");
+            realMessage += Configuration.DELIMITER_DECODER_TAG;
+            ByteBuf responseByteBuf = Unpooled.copiedBuffer(realMessage.getBytes());
+            MessageSender.sendMessage(ctx, responseByteBuf);
         }
     }
 
@@ -44,12 +47,6 @@ public class DelimiterBasedFrameDecoderServerHandler extends ChannelHandlerAdapt
         return null;
     }
 
-    public void sendMessage(ChannelHandlerContext ctx, String message){
-        message += Configuration.DELIMITER_DECODER_TAG;
-        ByteBuf responseByteBuf = Unpooled.copiedBuffer(message.getBytes());
-        ctx.write(responseByteBuf);
-        logger.info("Server is writing message to log file");
-    }
 
     /**
      * invoke when channel read data completely

@@ -1,5 +1,6 @@
 package com.mynetty.server.handler;
 
+import com.mynetty.commom.msgpack.encoderTool.MessageSender;
 import com.mynetty.server.Configuration;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -24,7 +25,9 @@ public class LineBasedFrameDecoderServerHandler extends ChannelHandlerAdapter{
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         String realMessage = decodeMessage(msg);
         if(realMessage != null){
-            sendMessage(ctx,"server:Hi I'm server");
+            ByteBuf responseByteBuf = Unpooled.copiedBuffer(realMessage.getBytes());
+            ctx.write(responseByteBuf);
+            MessageSender.sendMessage(ctx,"server:Hi I'm server");
         }
     }
 
@@ -44,11 +47,6 @@ public class LineBasedFrameDecoderServerHandler extends ChannelHandlerAdapter{
         return null;
     }
 
-    public void sendMessage(ChannelHandlerContext ctx, String message){
-        ByteBuf responseByteBuf = Unpooled.copiedBuffer(message.getBytes());
-        ctx.write(responseByteBuf);
-        logger.info("Server is writing message to log file");
-    }
 
     /**
      * invoke when channel read data completely

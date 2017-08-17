@@ -6,25 +6,28 @@ import com.mynetty.commom.msgpack.model.ProtocalMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
+import org.apache.log4j.Logger;
 import org.msgpack.core.MessagePack;
 import org.msgpack.core.MessageUnpacker;
 
 import java.util.List;
 
 public class MsgpackDecoder extends MessageToMessageDecoder<ByteBuf>{
+    private Logger logger = Logger.getLogger(this.getClass());
+
     protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) throws Exception {
-        final byte[] array;
-        final int length = byteBuf.readableBytes();
-        array = new byte[length];
-        byteBuf.getBytes(byteBuf.readerIndex(),array,0,length);
-        MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(array);
+          final byte[] array;
+          final int length = byteBuf.readableBytes();
+          array = new byte[length];
+          byteBuf.getBytes(byteBuf.readerIndex(),array,0,length);
+          MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(array);
 
-        Header header = decodeHeader(unpacker);
-        Message msg = getMessage(unpacker);
+          Header header = decodeHeader(unpacker);
+          Message msg = getMessage(unpacker);
 
-        ProtocalMessage pMessage = new ProtocalMessage(header, msg);
+          ProtocalMessage pMessage = new ProtocalMessage(header, msg);
 
-        list.add(pMessage);
+          list.add(pMessage);
     }
 
     public Header decodeHeader(MessageUnpacker unpacker)throws Exception{
@@ -35,7 +38,9 @@ public class MsgpackDecoder extends MessageToMessageDecoder<ByteBuf>{
         Long sessionId = unpacker.unpackLong();
         byte type = unpacker.unpackByte();
         byte priority = unpacker.unpackByte();
-        Header header = new Header(crcCode,bodyLength, sessionId, type, priority);
+        byte status = unpacker.unpackByte();
+        String auth = unpacker.unpackString();
+        Header header = new Header(crcCode, bodyLength, sessionId, type, priority, status, auth);
         return header;
     }
 
@@ -47,5 +52,10 @@ public class MsgpackDecoder extends MessageToMessageDecoder<ByteBuf>{
 
         Message msg = new Message(from, target, realMessage);
         return msg;
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        logger.error(cause);
     }
 }

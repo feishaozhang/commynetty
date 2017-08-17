@@ -1,7 +1,8 @@
 package com.mynetty.client;
 
 import com.mynetty.client.channeInitializer.MsgpackChannelInitializer;
-import com.mynetty.client.coderTool.MessageTool;
+import com.mynetty.commom.msgpack.encoderTool.MessageTool;
+import com.mynetty.commom.msgpack.messageEnum.MessageStatusEnum;
 import com.mynetty.commom.msgpack.messageEnum.MessageTypeEnum;
 import com.mynetty.commom.msgpack.model.ProtocalMessage;
 import com.mynetty.engineerModule.BaseComponentStarter;
@@ -12,7 +13,6 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import org.apache.log4j.Logger;
 
 import java.util.Scanner;
 
@@ -29,19 +29,15 @@ public class Client {
 
 
         final Client client = new Client();
-        new Thread(new Runnable() {
-            public void run() {
-                client.connect(ClientConfiguration.SERVER_HOSET,ClientConfiguration.SERVER_PORT);
-            }
-        }).start();
+        client.connect(ClientConfiguration.SERVER_HOSET,ClientConfiguration.SERVER_PORT);
 
-        while (true){
-            System.out.println("请输入消息");
-            Scanner s = new Scanner(System.in);
-            String line  = s.nextLine();
-            ProtocalMessage pm = MessageTool.getProtocolMessage(line,1000L,2000L, MessageTypeEnum.MESSAGE_BUSSINESS);
-            clientChannelHandler.writeAndFlush(pm);
-        }
+//        while (true){
+//            System.out.println("请输入消息");
+//            Scanner s = new Scanner(System.in);
+//            String line  = s.nextLine();
+//            ProtocalMessage pm = MessageTool.getProtocolMessage(line,1000L,2000L, MessageTypeEnum.MESSAGE_BUSSINESS, MessageStatusEnum.REQUEST);
+//            clientChannelHandler.writeAndFlush(pm);
+//        }
 
 
     }

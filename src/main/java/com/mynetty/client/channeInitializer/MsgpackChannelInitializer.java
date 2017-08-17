@@ -3,6 +3,7 @@ package com.mynetty.client.channeInitializer;
 import com.mynetty.client.ClientConfiguration;
 import com.mynetty.client.handler.DelimiterBasedFrameDecoderHandler;
 import com.mynetty.client.handler.MsgpackDecoderHandler;
+import com.mynetty.client.handler.heartbeat.HeartBeatReqHandler;
 import com.mynetty.commom.msgpack.MsgpackDecoder;
 import com.mynetty.commom.msgpack.MsgpackEncoder;
 import com.mynetty.server.handler.MsgpackServerHandler;
@@ -25,7 +26,7 @@ public class MsgpackChannelInitializer extends ChannelInitializer {
         socketChannel.pipeline().addLast("msgpack decoder",new MsgpackDecoder());
         socketChannel.pipeline().addLast("frameEncoder",new LengthFieldPrepender(2));
         socketChannel.pipeline().addLast("msgpack encoder", new MsgpackEncoder());
+        socketChannel.pipeline().addLast("HeartBeatReqHandler",new HeartBeatReqHandler());
         socketChannel.pipeline().addLast(new MsgpackDecoderHandler());
-//        socketChannel.pipeline().addLast("HeartBeatHandler",);
     }
 }

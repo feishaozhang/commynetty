@@ -27,15 +27,30 @@ public final class Header {
      */
     private byte priority;//消息优先级
 
+    /**
+     * 消息状态
+     * @see
+     */
+    private byte status;
+
+    /**
+     * 验证位
+     */
+    private String auth;
+
+
+
     public Header() {
     }
 
-    public Header(int crcCode, int length, long sessionID, byte type, byte priority) {
+    public Header(int crcCode, int length, long sessionID, byte type, byte priority, byte status,String auth) {
         this.crcCode = crcCode;
         this.length = length;
         this.sessionID = sessionID;
         this.type = type;
         this.priority = priority;
+        this.status = status;
+        this.auth = auth;
     }
 
     public int getCrcCode() {
@@ -74,4 +89,19 @@ public final class Header {
         this.priority = priority;
     }
 
+    public byte getStatus() {
+        return status;
+    }
+
+    public void setStatus(byte status) {
+        this.status = status;
+    }
+
+    public String getAuth() {
+        return auth;
+    }
+
+    public void setAuth(String auth) {
+        this.auth = auth;
+    }
 }

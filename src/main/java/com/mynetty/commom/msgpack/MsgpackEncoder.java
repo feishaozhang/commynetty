@@ -6,6 +6,7 @@ import com.mynetty.commom.msgpack.model.ProtocalMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
+import org.apache.log4j.Logger;
 import org.msgpack.core.MessageBufferPacker;
 import org.msgpack.core.MessagePack;
 
@@ -14,26 +15,41 @@ import org.msgpack.core.MessagePack;
  * 高效，码流小，跨平台
  */
 public class MsgpackEncoder extends MessageToByteEncoder<Object>{
+    private Logger logger = Logger.getLogger(this.getClass());
 
     protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf byteBuf) throws Exception {
         MessageBufferPacker msgpack = MessagePack.newDefaultBufferPacker();
         ProtocalMessage message = null;
-        if(msg != null){
-            message = (ProtocalMessage) msg;
-            Header header = message.getHeader();
-            Message messageBody = message.getBody();
+      try {
+          if(msg != null){
+              message = (ProtocalMessage) msg;
+              Header header = message.getHeader();
+              Message messageBody = message.getBody();
 
-            //编码
-            msgpack.packInt(header.getCrcCode());//校验头
-            msgpack.packInt(header.getLength());//消息长度
-            msgpack.packLong(header.getSessionID());//sessionID
-            msgpack.packByte(header.getType());//消息类型
-            msgpack.packByte(header.getPriority());//消息优先级
+              //编码
+              msgpack.packInt(header.getCrcCode());//校验头
+              msgpack.packInt(header.getLength());//消息长度
+              msgpack.packLong(header.getSessionID());//sessionID
+              msgpack.packByte(header.getType());//消息类型
+              msgpack.packByte(header.getPriority());//消息优先级
+              msgpack.packByte(header.getStatus());
+              msgpack.packString(header.getAuth());
 
-            msgpack.packLong(messageBody.getFrom());
-            msgpack.packLong(messageBody.getTarget());
-            msgpack.packString(messageBody.getMessage());
-            byteBuf.writeBytes(msgpack.toByteArray());
-        }
+              if(messageBody != null){
+                  msgpack.packLong(messageBody.getFrom());
+                  msgpack.packLong(messageBody.getTarget());
+                  msgpack.packString(messageBody.getMessage()==null?"":messageBody.getMessage());
+              }
+              byteBuf.writeBytes(msgpack.toByteArray());
+          }
+      }catch (Exception e){
+          e.printStackTrace();
+          throw new Exception(e);
+      }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        logger.error(cause);
     }
 }

@@ -1,6 +1,8 @@
 package com.mynetty.server.handler;
 
-import com.mynetty.client.coderTool.MessageTool;
+import com.mynetty.commom.msgpack.encoderTool.MessageSender;
+import com.mynetty.commom.msgpack.encoderTool.MessageTool;
+import com.mynetty.commom.msgpack.messageEnum.MessageStatusEnum;
 import com.mynetty.commom.msgpack.messageEnum.MessageTypeEnum;
 import com.mynetty.commom.msgpack.model.Header;
 import com.mynetty.commom.msgpack.model.Message;
@@ -51,6 +53,7 @@ public class MsgpackServerHandler extends ChannelHandlerAdapter{
      * @return true 处理成功 false 处理失败
      */
     public boolean processMessage(ChannelHandlerContext ctx, ProtocalMessage message){
+        logger.info("消息处理链=======================>");
         //消息头
         Header header = message.getHeader();
         //消息内容
@@ -59,38 +62,17 @@ public class MsgpackServerHandler extends ChannelHandlerAdapter{
         byte type = message.getHeader().getType();
         MessageTypeEnum mType = MessageTypeEnum.getMessageType(type);
         switch (mType){
-            case AUTH_CHANNEL://用户验证
-                if(authUserConnection(messageBody)){ //用户验证携带用户参数进行验证
-                    Long userId = Long.parseLong(message.getBody().getMessage());
-                    SessionChannelCache.addSession(userId ,ctx.channel());
-                    ProtocalMessage newMsg = MessageTool.getProtocolMessage("用户登录成功",0L,0L,MessageTypeEnum.HEART_BEAT_RES);
-                    sendMessage(ctx.channel(), newMsg);
-                    logger.info("==>用户验证成功,缓存Session！");
-                }
-                else{
-                    ctx.close();
-                    logger.info("==>用户验证失败,关闭链路！");
-                }
-                break;
-
-            case HEART_BEAT_REQ://心跳请求消息
-                //心跳
-                break;
-
-            case HEART_BEAT_RES://心跳回复消息
-                break;
-
             case MESSAGE_BUSSINESS://消息路由,当用户在线则发送消息，否则返回发送者一条消息“当前用户已经下线”
-                Long target = messageBody.getTarget();
+                long target = messageBody.getTarget();
                 Channel channel = SessionChannelCache.getSession(target);
                 if(channel != null){
 
-                    ProtocalMessage reSendPM = MessageTool.getProtocolMessage(messageBody.getMessage(),messageBody.getFrom(),messageBody.getTarget(),MessageTypeEnum.MESSAGE_BUSSINESS);
-                    sendMessage(channel, reSendPM);
+                    ProtocalMessage reSendPM = MessageTool.getProtocolMessage(messageBody.getMessage(),messageBody.getFrom(),messageBody.getTarget(),MessageTypeEnum.MESSAGE_BUSSINESS,MessageStatusEnum.REQUEST);
+                    MessageSender.sendMessage(channel, reSendPM);
                     logger.info("消息已经发送"+"从用户 "+messageBody.getFrom() +"到 "+ messageBody.getTarget());
                 }else{
-                    ProtocalMessage reSendPM = MessageTool.getProtocolMessage("当前用户已经下线",0L,messageBody.getFrom(),MessageTypeEnum.MESSAGE_BUSSINESS);
-                    sendMessage(channel, reSendPM);
+                    ProtocalMessage reSendPM = MessageTool.getProtocolMessage("当前用户已经下线",0L,messageBody.getFrom(),MessageTypeEnum.MESSAGE_BUSSINESS, MessageStatusEnum.REQUEST);
+                    MessageSender.sendMessage(channel, reSendPM);
                     logger.info("当前用户已经下线");
                 }
                 break;
@@ -101,13 +83,7 @@ public class MsgpackServerHandler extends ChannelHandlerAdapter{
         return false;
     }
 
-    /**
-     * 用户接入验证
-     * @return
-     */
-    public boolean authUserConnection(Message message){
-        return true;
-    }
+
 
     /**
      * 验证消息的有效性,当前只杨正请求头信息

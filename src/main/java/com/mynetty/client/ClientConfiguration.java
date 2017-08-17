@@ -29,4 +29,13 @@ public class ClientConfiguration {
      * 客户端连接超时时间
      */
     public static int TIME_OUT_MILLIS = 3000;
+    /**
+     * 客户端心跳设置
+     */
+    public static int HEART_BEAT_DELAY = 100;
+    /**
+     * 客户端发送心跳时间间隔(毫秒)
+     */
+    public static int HEART_BEAT_INTERVAL = 5000;
+
 }

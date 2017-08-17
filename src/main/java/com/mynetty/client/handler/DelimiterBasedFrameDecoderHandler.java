@@ -1,6 +1,8 @@
 package com.mynetty.client.handler;
 
 import com.mynetty.client.ClientConfiguration;
+import com.mynetty.commom.msgpack.encoderTool.MessageSender;
+import com.sun.xml.internal.ws.resources.SenderMessages;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerAdapter;
@@ -28,7 +30,7 @@ private Logger logger = Logger.getLogger(this.getClass());
            byte[] req =("Hello I'm message which from Client" + ClientConfiguration.DELIMITER_DECODER_TAG).getBytes();
            firstMessage = Unpooled.buffer(req.length);
            firstMessage.writeBytes(req);
-           ctx.writeAndFlush(firstMessage);
+           MessageSender.sendMessage(ctx, firstMessage);
            logger.info("sending message : "+i);
        }
     }
