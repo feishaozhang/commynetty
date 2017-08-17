@@ -13,14 +13,14 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class SessionChannelCache {
 
-    private final static Map<Integer, Channel> sessionCache = new ConcurrentHashMap<Integer, Channel>();
+    private final static Map<Long, Channel> sessionCache = new ConcurrentHashMap<Long, Channel>();
 
     /**
      * 添加Channel
      * @param channelId channelId 连接的ID
      * @param channel 会话channel
      */
-    public static void addSession(int channelId ,Channel channel){
+    public static void addSession(Long channelId ,Channel channel){
         if(sessionCache.containsKey(channelId)){
             if(sessionCache.get(channelId) == channel){
                 return ;
@@ -33,7 +33,7 @@ public class SessionChannelCache {
      * 删除Session
      * @param channelId
      */
-    public static void removeSession(int channelId){
+    public static void removeSession(Long channelId){
         if(sessionCache.containsKey(channelId)){
             sessionCache.remove(channelId);
         }
@@ -44,7 +44,7 @@ public class SessionChannelCache {
      * @param channelId
      * @return
      */
-    public static Channel getSession(int channelId){
+    public static Channel getSession(Long channelId){
         if(!sessionCache.containsKey(channelId)){
             return null;
         }

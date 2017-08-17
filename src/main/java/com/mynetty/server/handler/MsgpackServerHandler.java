@@ -10,7 +10,6 @@ import com.mynetty.server.cache.SessionChannelCache;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelId;
 import org.apache.log4j.Logger;
 
 /**
@@ -40,7 +39,7 @@ public class MsgpackServerHandler extends ChannelHandlerAdapter{
 
         //消息处理
         if(processMessage(ctx,message)){
-            sendMessage(ctx, message);
+            sendMessage(ctx.channel(), message);
         }
     }
 
@@ -52,18 +51,20 @@ public class MsgpackServerHandler extends ChannelHandlerAdapter{
      * @return true 处理成功 false 处理失败
      */
     public boolean processMessage(ChannelHandlerContext ctx, ProtocalMessage message){
-        Message messageBody = message.getBody();
+        //消息头
         Header header = message.getHeader();
-        //开始处理消息
+        //消息内容
+        Message messageBody = message.getBody();
+        //============================================开始处理消息
         byte type = message.getHeader().getType();
         MessageTypeEnum mType = MessageTypeEnum.getMessageType(type);
         switch (mType){
             case AUTH_CHANNEL://用户验证
                 if(authUserConnection(messageBody)){ //用户验证携带用户参数进行验证
-                    int userId = Integer.parseInt(message.getBody().getMessage());
+                    Long userId = Long.parseLong(message.getBody().getMessage());
                     SessionChannelCache.addSession(userId ,ctx.channel());
                     ProtocalMessage newMsg = MessageTool.getProtocolMessage("用户登录成功",0L,0L,MessageTypeEnum.HEART_BEAT_RES);
-                    sendMessage(ctx, newMsg);
+                    sendMessage(ctx.channel(), newMsg);
                     logger.info("==>用户验证成功,缓存Session！");
                 }
                 else{
@@ -79,10 +80,19 @@ public class MsgpackServerHandler extends ChannelHandlerAdapter{
             case HEART_BEAT_RES://心跳回复消息
                 break;
 
-            case MESSAGE_BUSSINESS://消息路由
+            case MESSAGE_BUSSINESS://消息路由,当用户在线则发送消息，否则返回发送者一条消息“当前用户已经下线”
+                Long target = messageBody.getTarget();
+                Channel channel = SessionChannelCache.getSession(target);
+                if(channel != null){
 
-                logger.info("Read msg: "+message.getBody().getMessage());
-
+                    ProtocalMessage reSendPM = MessageTool.getProtocolMessage(messageBody.getMessage(),messageBody.getFrom(),messageBody.getTarget(),MessageTypeEnum.MESSAGE_BUSSINESS);
+                    sendMessage(channel, reSendPM);
+                    logger.info("消息已经发送"+"从用户 "+messageBody.getFrom() +"到 "+ messageBody.getTarget());
+                }else{
+                    ProtocalMessage reSendPM = MessageTool.getProtocolMessage("当前用户已经下线",0L,messageBody.getFrom(),MessageTypeEnum.MESSAGE_BUSSINESS);
+                    sendMessage(channel, reSendPM);
+                    logger.info("当前用户已经下线");
+                }
                 break;
             case OFF_LINE://用户下线
 
@@ -112,8 +122,8 @@ public class MsgpackServerHandler extends ChannelHandlerAdapter{
 
     }
 
-    public void sendMessage(ChannelHandlerContext ctx, Object message){
-        ctx.write(message);
+    public void sendMessage(Channel channel, Object message){
+        channel.writeAndFlush(message);
         logger.info("Server is writing message to log file");
     }
 

@@ -5,6 +5,10 @@ import com.mynetty.commom.msgpack.model.Header;
 import com.mynetty.commom.msgpack.model.Message;
 import com.mynetty.commom.msgpack.model.ProtocalMessage;
 
+/**
+ * 生成一个消息
+ *
+ */
 public class MessageTool {
 
     public static ProtocalMessage getProtocolMessage(String msg, Long from, Long target, MessageTypeEnum messageType){

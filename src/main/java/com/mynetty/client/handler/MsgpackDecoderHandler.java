@@ -28,9 +28,8 @@ private Logger logger = Logger.getLogger(this.getClass());
 
     @Override
     public void channelActive(final ChannelHandlerContext ctx) throws Exception {
-        ProtocalMessage msg = MessageTool.getProtocolMessage("100000", 0L, 0L, MessageTypeEnum.AUTH_CHANNEL);
-        ctx.write(msg);
-        ctx.flush();
+        ProtocalMessage msg = MessageTool.getProtocolMessage("1000", 1000L, 0L, MessageTypeEnum.AUTH_CHANNEL);
+        ctx.writeAndFlush(msg);
     }
 
     @Override
