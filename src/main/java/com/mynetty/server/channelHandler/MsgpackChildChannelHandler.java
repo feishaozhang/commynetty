@@ -1,5 +1,6 @@
 package com.mynetty.server.channelHandler;
 
+import com.mynetty.client.ClientConfiguration;
 import com.mynetty.commom.msgpack.MsgpackDecoder;
 import com.mynetty.commom.msgpack.MsgpackEncoder;
 import com.mynetty.server.Configuration;
@@ -14,6 +15,7 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.timeout.ReadTimeoutHandler;
 
 /**
  * 服务端消息链
@@ -29,6 +31,7 @@ public class MsgpackChildChannelHandler extends ChannelInitializer<SocketChannel
             socketChannel.pipeline().addLast(new MsgpackEncoder());
             socketChannel.pipeline().addLast("messageValidate", new ValidateMessageAdapter());//消息头验证链
             socketChannel.pipeline().addLast("authLoginChannelAdapter", new AuthLoginChannelAdapter());//登录验证链
+            socketChannel.pipeline().addLast("readTimeOutHandler", new ReadTimeoutHandler(ClientConfiguration.READ_TIME_OUT));//60秒未收到任何消息判定为掉线
             socketChannel.pipeline().addLast("heartBeatResp", new HeartBeatRespHandlerAdapter());//心跳链
             socketChannel.pipeline().addLast(new MsgpackServerHandler());
         }

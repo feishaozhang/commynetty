@@ -16,7 +16,7 @@ public class ValidateMessageAdapter extends ChannelHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ProtocolMessage message = (ProtocolMessage) msg;
         if(!validateRequestAvaliable(message)){
-            logger.info("链路认证失败，关闭链路!");
+            logger.error("链路认证失败，关闭链路!");
             ctx.close();
         }
         else{
@@ -25,7 +25,7 @@ public class ValidateMessageAdapter extends ChannelHandlerAdapter {
     }
 
     /**
-     * 验证消息的有效性,当前只杨正请求头信息
+     * 验证消息的有效性,当前正请求头信息
      * @param message
      */
     public boolean validateRequestAvaliable(ProtocolMessage message){
@@ -34,7 +34,6 @@ public class ValidateMessageAdapter extends ChannelHandlerAdapter {
             return true;
         }
         return false;
-
     }
 
 }

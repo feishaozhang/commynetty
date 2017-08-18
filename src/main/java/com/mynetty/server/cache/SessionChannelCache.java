@@ -2,8 +2,10 @@ package com.mynetty.server.cache;
 
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelId;
 import org.apache.log4j.Logger;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -15,45 +17,83 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SessionChannelCache {
     private static Logger logger = Logger.getLogger(SessionChannelCache.class);
 
-    private final static Map<Long, Channel> sessionCache = new ConcurrentHashMap<Long, Channel>();
+    private final static Map<String, Channel> channelSessionCache = new ConcurrentHashMap<String, Channel>();
+    private final static Map<Long, String > userIdAndChannelIdMapping = new ConcurrentHashMap<Long, String>();
+
     /**
      * 添加Channel
-     * @param channelId channelId 连接的ID
+     * @param userID channelId 连接的ID
      * @param channel 会话channel
      */
-    public static void addSession(Long channelId ,Channel channel){
-        if(sessionCache.containsKey(channelId)){
-            if(sessionCache.get(channelId) == channel){
+    public static void addSession(long userID ,Channel channel){
+        ChannelId channelId = channel.id();
+        if(userIdAndChannelIdMapping.containsKey(userID)){
+            if(userIdAndChannelIdMapping.get(userID) == channelId.asLongText()){
                 return ;
             }
         }
-        sessionCache.put(channelId, channel);
+        userIdAndChannelIdMapping.put(userID, channelId.asLongText());
+        channelSessionCache.put(channelId.asLongText(), channel);
     }
 
     /**
      * 删除Session
+     * @param userId userId
+     */
+    public static void removeSession(Long userId){
+        if(userIdAndChannelIdMapping.containsKey(userId)){
+            String channelId = userIdAndChannelIdMapping.get(userId);
+            userIdAndChannelIdMapping.remove(userId);
+            if(channelSessionCache.containsKey(channelId)){
+                channelSessionCache.remove(channelId);
+            }
+        }
+    }
+
+
+    /**
+     *
      * @param channelId
      */
-    public static void removeSession(Long channelId){
-        if(sessionCache.containsKey(channelId)){
-            sessionCache.remove(channelId);
+    public static void removeSession(String channelId){
+        if(channelSessionCache.containsKey(channelId)){
+            channelSessionCache.remove(channelId);
+            if(userIdAndChannelIdMapping.containsValue(channelId)){
+                Collection<String> values = userIdAndChannelIdMapping.values();
+                values.remove(channelId);
+            }
         }
     }
 
     /**
      * 获取Session
+     * @param userId 用户Id
+     * @return
+     */
+    public static Channel getSession(long userId){
+        if(!userIdAndChannelIdMapping.containsKey(userId)){
+            return null;
+        }
+        String channelId = userIdAndChannelIdMapping.get(userId);
+        return channelSessionCache.get(channelId);
+    }
+
+    /**
+     * 根据ChannelId获取CHannel
      * @param channelId
      * @return
      */
-    public static Channel getSession(Long channelId){
-        if(!sessionCache.containsKey(channelId)){
-            return null;
+    public static Channel getSession(String channelId){
+        if(channelSessionCache.containsKey(channelId)){
+            return channelSessionCache.get(channelId);
         }
-        return sessionCache.get(channelId);
+        return null;
     }
 
     public static void resetSession(){
-        sessionCache.clear();
+        channelSessionCache.clear();
         logger.info("Session 被重置");
     }
+
+
 }

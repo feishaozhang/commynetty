@@ -64,7 +64,7 @@ public class ClientCache {
         }
         T value = null;
         try{
-            value = (T)(runtimeCache.get(key));
+            value = t.cast((runtimeCache.get(key)));
         }catch (Exception e){
             logger.error(e);
         }
@@ -76,5 +76,9 @@ public class ClientCache {
      */
     public static void resetCacheValue(){
         runtimeCache.clear();
+    }
+
+    private static Map<String, Object>  getAll(){
+       return runtimeCache;
     }
 }

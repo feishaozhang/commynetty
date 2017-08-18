@@ -20,7 +20,6 @@ public class MsgpackEncoder extends MessageToByteEncoder<Object>{
     protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf byteBuf) throws Exception {
         MessageBufferPacker msgpack = MessagePack.newDefaultBufferPacker();
         ProtocolMessage message = null;
-      try {
           if(msg != null){
               message = (ProtocolMessage) msg;
               Header header = message.getHeader();
@@ -42,15 +41,10 @@ public class MsgpackEncoder extends MessageToByteEncoder<Object>{
               }
               byteBuf.writeBytes(msgpack.toByteArray());
           }
-      }catch (Exception e){
-          e.printStackTrace();
-          throw new Exception(e);
-      }
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         logger.error(cause);
-        ctx.fireExceptionCaught(cause);
     }
 }

@@ -104,4 +104,8 @@ public final class Header {
     public void setAuth(String auth) {
         this.auth = auth;
     }
+
+    public void setCrcCode(int crcCode) {
+        this.crcCode = crcCode;
+    }
 }

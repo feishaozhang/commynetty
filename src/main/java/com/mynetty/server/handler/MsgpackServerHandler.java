@@ -51,12 +51,12 @@ public class MsgpackServerHandler extends ChannelHandlerAdapter{
         switch (mType){
 
             case MESSAGE_BUSSINESS://消息转发
-                messageBussiness(messageBody);
+                messageBussiness(ctx, messageBody);
                 break;
 
             case OFF_LINE://用户下线
-                long from = messageBody.getTarget();
-                kickUser(from);
+                String channelId = ctx.channel().id().asLongText();
+                kickUser(channelId);
                 break;
         }
         return false;
@@ -68,7 +68,7 @@ public class MsgpackServerHandler extends ChannelHandlerAdapter{
      * 消息路由,当用户在线则发送消息，否则返回发送者一条消息“当前用户已经下线”
      * @param messageBody 消息体
      */
-    public void messageBussiness(Message messageBody){
+    public void messageBussiness(ChannelHandlerContext ctx, Message messageBody){
         long target = messageBody.getTarget();
         Channel channel = SessionChannelCache.getSession(target);
         if(channel != null){
@@ -77,7 +77,7 @@ public class MsgpackServerHandler extends ChannelHandlerAdapter{
             logger.debug("消息已经发送"+"从用户 "+messageBody.getFrom() +"到 "+ messageBody.getTarget());
         }else{
             ProtocolMessage reSendPM = MessageTool.getProtocolMessage("当前用户已经下线",0L,messageBody.getFrom(),MessageTypeEnum.MESSAGE_BUSSINESS, MessageStatusEnum.REQUEST);
-            MessageSender.sendMessage(channel, reSendPM);
+            MessageSender.sendMessage(ctx.channel(), reSendPM);
             logger.debug("当前用户已经下线");
         }
     }
@@ -85,10 +85,10 @@ public class MsgpackServerHandler extends ChannelHandlerAdapter{
 
     /**
      * 下线
-     * @param userId
+     * @param
      */
-    public void kickUser(long userId){
-        SessionChannelCache.removeSession(userId);
+    public void kickUser(String channelId ){
+        SessionChannelCache.removeSession(channelId);
     }
 
     /**
@@ -107,6 +107,7 @@ public class MsgpackServerHandler extends ChannelHandlerAdapter{
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         ctx.close();
         System.out.println("ChannelHandlerContext error occur!"+cause.getMessage());
+
     }
 
 }

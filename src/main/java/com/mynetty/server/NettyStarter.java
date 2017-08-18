@@ -1,8 +1,6 @@
 package com.mynetty.server;
 
-import com.mynetty.client.channeInitializer.MsgpackChannelInitializer;
-import com.mynetty.exception.NettyServerException;
-import com.mynetty.server.channelHandler.FixedLengthBasedFrameDecoderChildChannelHandler;
+import com.mynetty.exception.CommyNettyServerException;
 import com.mynetty.server.channelHandler.MsgpackChildChannelHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -18,9 +16,9 @@ public class NettyStarter {
     /**
      * bind a port
      * @param port
-     * @throws NettyServerException
+     * @throws CommyNettyServerException
      */
-    public void bind(int port)throws NettyServerException{
+    public void bind(int port)throws CommyNettyServerException {
         /**
          *  1、Config Server Nio Threads group
          *  2、NioEventLoopGroup is a set of thread group

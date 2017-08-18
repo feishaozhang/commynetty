@@ -4,6 +4,7 @@ import com.mynetty.commom.msgpack.messageEnum.MessageStatusEnum;
 import com.mynetty.commom.msgpack.messageEnum.MessageTypeEnum;
 import com.mynetty.commom.msgpack.model.Header;
 import com.mynetty.commom.msgpack.model.Message;
+import com.mynetty.commom.msgpack.model.ProtocolMessage;
 
 /**
  * MessageBuilder
@@ -47,5 +48,14 @@ public class MessageBuilder {
     public MessageBuilder setHeaderStatus(MessageStatusEnum status){
         this.messageHeader.setStatus(status.getCode());
         return this;
+    }
+
+    public MessageBuilder setCrcCode(int crcCode){
+        this.messageHeader.setCrcCode(crcCode);
+        return this;
+    }
+
+    public ProtocolMessage build(){
+       return new ProtocolMessage(messageHeader,messageBody);
     }
 }

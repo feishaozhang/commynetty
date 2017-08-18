@@ -3,7 +3,9 @@ package com.mynetty.commom.msgpack;
 import com.mynetty.commom.msgpack.model.Header;
 import com.mynetty.commom.msgpack.model.Message;
 import com.mynetty.commom.msgpack.model.ProtocolMessage;
+import com.mynetty.server.cache.SessionChannelCache;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import org.apache.log4j.Logger;
@@ -78,6 +80,7 @@ public class MsgpackDecoder extends MessageToMessageDecoder<ByteBuf>{
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         logger.error(cause);
-        ctx.fireExceptionCaught(cause);
+        //客户端非正常退出时，需要手动关闭句柄
+        SessionChannelCache.removeSession(ctx.channel().id().asLongText());
     }
 }

@@ -33,4 +33,5 @@ public class Configuration {
      * 固定字符解码器包大小
      */
     public static int FIXED_LENGTH_SIZE = 20;
+
 }
