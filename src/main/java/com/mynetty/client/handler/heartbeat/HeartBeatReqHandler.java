@@ -6,8 +6,7 @@ import com.mynetty.commom.msgpack.encoderTool.MessageTool;
 import com.mynetty.commom.msgpack.messageEnum.MessageStatusEnum;
 import com.mynetty.commom.msgpack.messageEnum.MessageTypeEnum;
 import com.mynetty.commom.msgpack.model.Header;
-import com.mynetty.commom.msgpack.model.Message;
-import com.mynetty.commom.msgpack.model.ProtocalMessage;
+import com.mynetty.commom.msgpack.model.ProtocolMessage;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.log4j.Logger;
@@ -21,25 +20,31 @@ import java.util.concurrent.TimeUnit;
 public class HeartBeatReqHandler extends ChannelHandlerAdapter{
     private volatile ScheduledFuture<?> heartBeat;
     private Logger logger = Logger.getLogger(this.getClass());
+    private final Object heartBeatLocker = new Object();
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        ProtocalMessage message = (ProtocalMessage)msg;
+        ProtocolMessage message = (ProtocolMessage)msg;
         //返回心跳应答消息
         Header header = message.getHeader();
-        logger.info("进入HeartBeatAdapter");
         //服务器发回的验证成功
         if (   (header != null)
             && (header.getType()== MessageTypeEnum.AUTH_CHANNEL_RES.getMessageCode())
             && (header.getStatus() == MessageStatusEnum.AUTH_SUCCESS.getCode())){
 
-            logger.info("进入HeartBeatAdapter=====================================");
-            //开启心跳连接
-            heartBeat = ctx.executor().scheduleAtFixedRate(new HeartBeatReqHandler.HeartBeatTask(ctx)
-                    , ClientConfiguration.HEART_BEAT_DELAY,ClientConfiguration.HEART_BEAT_INTERVAL, TimeUnit.MILLISECONDS);
+            if(heartBeat == null) {//避免开启两次的心跳定时器
+                synchronized (heartBeatLocker) {
+                    if (heartBeat == null) {
+                        heartBeat = ctx.executor().scheduleAtFixedRate(
+                                new HeartBeatReqHandler.HeartBeatTask(ctx)
+                                , ClientConfiguration.HEART_BEAT_DELAY, ClientConfiguration.HEART_BEAT_INTERVAL, TimeUnit.MILLISECONDS);
+                    }
+                }
+            }
+            logger.debug("认证成功启动心跳定时器");
         }
         else if((header != null) && (header.getType() == MessageTypeEnum.HEART_BEAT_RES.getMessageCode())){
-            logger.info("Got HeartBeat response From Server");
+            logger.debug("收到服务端的心跳回复");
         }
         else{
             ctx.fireChannelRead(msg);
@@ -58,9 +63,9 @@ public class HeartBeatReqHandler extends ChannelHandlerAdapter{
         }
 
         public void run() {
-            ProtocalMessage msg = MessageTool.getProtocolMessage(MessageTypeEnum.HEART_BEAT_REQ, MessageStatusEnum.REQUEST);
+            ProtocolMessage msg = MessageTool.getProtocolMessage(MessageTypeEnum.HEART_BEAT_REQ, MessageStatusEnum.REQUEST);
             MessageSender.sendMessage(ctx, msg);
-            logger.info("Client is sending a HeartBeat to Server!");
+            logger.debug("客户端发起心跳请求");
         }
     }
 

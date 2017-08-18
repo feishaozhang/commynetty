@@ -1,16 +1,18 @@
 package com.mynetty.client.handler;
 
+import com.mynetty.client.cache.ClientCache;
+import com.mynetty.commom.msgpack.encoderTool.EncryptTool;
+import com.mynetty.commom.msgpack.encoderTool.MessageBuilder;
 import com.mynetty.commom.msgpack.encoderTool.MessageSender;
-import com.mynetty.commom.msgpack.encoderTool.MessageTool;
 import com.mynetty.commom.msgpack.messageEnum.MessageStatusEnum;
 import com.mynetty.commom.msgpack.messageEnum.MessageTypeEnum;
-import com.mynetty.commom.msgpack.model.ProtocalMessage;
+import com.mynetty.commom.msgpack.model.ProtocolMessage;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.log4j.Logger;
 
 /**
-* 业务处理Handler
+* 消息业务处理Handler
 */
 public class MsgpackDecoderHandler extends ChannelHandlerAdapter{
 private Logger logger = Logger.getLogger(this.getClass());
@@ -20,15 +22,8 @@ private Logger logger = Logger.getLogger(this.getClass());
     }
 
     @Override
-    public void channelActive(final ChannelHandlerContext ctx) throws Exception {
-        ProtocalMessage msg = MessageTool.getProtocolMessage("1000", 1000L, 0L, MessageTypeEnum.AUTH_CHANNEL_REQ, MessageStatusEnum.REQUEST,"1000");
-        MessageSender.sendMessage(ctx, msg);
-    }
-
-    @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        ProtocalMessage message = (ProtocalMessage)msg;//Convert Object to ByteBuf
-
+        ProtocolMessage message = (ProtocolMessage)msg;//Convert Object to ByteBuf
         logger.info("Read msg: "+message.getBody().getMessage());
     }
 
@@ -39,7 +34,7 @@ private Logger logger = Logger.getLogger(this.getClass());
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.warn("Unexpected exception from downStream "+cause.getMessage());
+        logger.error("链接异常，关闭ctx"+cause.getMessage());
         ctx.close();
     }
 }

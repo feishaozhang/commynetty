@@ -2,7 +2,7 @@ package com.mynetty.commom.msgpack;
 
 import com.mynetty.commom.msgpack.model.Header;
 import com.mynetty.commom.msgpack.model.Message;
-import com.mynetty.commom.msgpack.model.ProtocalMessage;
+import com.mynetty.commom.msgpack.model.ProtocolMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
@@ -12,24 +12,39 @@ import org.msgpack.core.MessageUnpacker;
 
 import java.util.List;
 
+/**
+ * 使用MsgpackDecoder进行解码
+ */
 public class MsgpackDecoder extends MessageToMessageDecoder<ByteBuf>{
     private Logger logger = Logger.getLogger(this.getClass());
 
+    /**
+     * 解码
+     * @param channelHandlerContext
+     * @param byteBuf
+     * @param list
+     * @throws Exception
+     */
     protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) throws Exception {
           final byte[] array;
           final int length = byteBuf.readableBytes();
           array = new byte[length];
           byteBuf.getBytes(byteBuf.readerIndex(),array,0,length);
+          //解码
           MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(array);
-
           Header header = decodeHeader(unpacker);
           Message msg = getMessage(unpacker);
 
-          ProtocalMessage pMessage = new ProtocalMessage(header, msg);
-
+          ProtocolMessage pMessage = new ProtocolMessage(header, msg);
           list.add(pMessage);
     }
 
+    /**
+     * 解码消息头
+     * @param unpacker
+     * @return
+     * @throws Exception
+     */
     public Header decodeHeader(MessageUnpacker unpacker)throws Exception{
 
         //Decode Header
@@ -44,6 +59,12 @@ public class MsgpackDecoder extends MessageToMessageDecoder<ByteBuf>{
         return header;
     }
 
+    /**
+     * 解码消息体
+     * @param unpacker
+     * @return
+     * @throws Exception
+     */
     public Message getMessage(MessageUnpacker unpacker)throws Exception{
         //Decode Message
         Long from = unpacker.unpackLong();
@@ -57,5 +78,6 @@ public class MsgpackDecoder extends MessageToMessageDecoder<ByteBuf>{
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         logger.error(cause);
+        ctx.fireExceptionCaught(cause);
     }
 }

@@ -5,7 +5,7 @@ import com.mynetty.commom.msgpack.encoderTool.MessageTool;
 import com.mynetty.commom.msgpack.messageEnum.MessageStatusEnum;
 import com.mynetty.commom.msgpack.messageEnum.MessageTypeEnum;
 import com.mynetty.commom.msgpack.model.Header;
-import com.mynetty.commom.msgpack.model.ProtocalMessage;
+import com.mynetty.commom.msgpack.model.ProtocolMessage;
 import com.mynetty.server.cache.SessionChannelCache;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
@@ -20,9 +20,7 @@ public class AuthLoginChannelAdapter extends ChannelHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        logger.info("登录验证链=====================================>");
-
-        ProtocalMessage message = (ProtocalMessage)msg;
+        ProtocolMessage message = (ProtocolMessage)msg;
         //返回心跳应答消息
         Header header = message.getHeader();
         //验证串
@@ -32,13 +30,13 @@ public class AuthLoginChannelAdapter extends ChannelHandlerAdapter {
             if(authUserConnection(auth)){ //用户验证携带用户参数进行验证
                 long userId = Long.parseLong(header.getAuth());
                 SessionChannelCache.addSession(userId ,ctx.channel());
-                ProtocalMessage newMsg = MessageTool.getProtocolMessage("0",0L,0L,MessageTypeEnum.AUTH_CHANNEL_RES, MessageStatusEnum.AUTH_SUCCESS);
+                ProtocolMessage newMsg = MessageTool.getProtocolMessage("0",0L,0L,MessageTypeEnum.AUTH_CHANNEL_RES, MessageStatusEnum.AUTH_SUCCESS);
                 MessageSender.sendMessage(ctx.channel(), newMsg);
                 logger.info("==>用户验证成功,缓存Session！");
             }
             else{
                 //验证失败断开链路，不继续等待。
-                ProtocalMessage newMsg = MessageTool.getProtocolMessage("0",0L,0L,MessageTypeEnum.AUTH_CHANNEL_RES, MessageStatusEnum.AUTH_FAILD);
+                ProtocolMessage newMsg = MessageTool.getProtocolMessage("0",0L,0L,MessageTypeEnum.AUTH_CHANNEL_RES, MessageStatusEnum.AUTH_FAILD);
                 MessageSender.sendMessage(ctx.channel(), newMsg);
                 ctx.close();
                 logger.info("==>用户验证失败,关闭链路！");
@@ -46,7 +44,6 @@ public class AuthLoginChannelAdapter extends ChannelHandlerAdapter {
         }
         else{
             ctx.fireChannelRead(msg);
-            logger.info("登录验证链=====================================>转发");
         }
     }
 

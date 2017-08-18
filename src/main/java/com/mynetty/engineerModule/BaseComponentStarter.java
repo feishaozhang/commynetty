@@ -6,9 +6,7 @@ import org.apache.log4j.PropertyConfigurator;
 import java.net.URL;
 
 /**
- * Singleton patterm BaseComponentStarter
- * If you want to get the Instance of this Class
- * please use this method getBaseComponentStarter()
+ * 用于其他组件的启动
  * @version 1.0
  * @author  zsf
  */

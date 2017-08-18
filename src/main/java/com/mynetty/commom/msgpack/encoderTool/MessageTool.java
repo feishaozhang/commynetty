@@ -4,7 +4,7 @@ import com.mynetty.commom.msgpack.messageEnum.MessageStatusEnum;
 import com.mynetty.commom.msgpack.messageEnum.MessageTypeEnum;
 import com.mynetty.commom.msgpack.model.Header;
 import com.mynetty.commom.msgpack.model.Message;
-import com.mynetty.commom.msgpack.model.ProtocalMessage;
+import com.mynetty.commom.msgpack.model.ProtocolMessage;
 
 /**
  * 生成一个消息
@@ -21,9 +21,9 @@ public class MessageTool {
      * @param messateStatus
      * @return
      */
-    public static ProtocalMessage getProtocolMessage(String msg, long from, long target
+    public static ProtocolMessage getProtocolMessage(String msg, long from, long target
             , MessageTypeEnum messageType, MessageStatusEnum messateStatus, String auth){
-        ProtocalMessage message = new ProtocalMessage(getHeader(messageType, messateStatus, auth), getMessage(msg, from, target));
+        ProtocolMessage message = new ProtocolMessage(getHeader(messageType, messateStatus, auth), getMessage(msg, from, target));
         return message;
     }
 
@@ -36,9 +36,9 @@ public class MessageTool {
      * @param messateStatus
      * @return
      */
-    public static ProtocalMessage getProtocolMessage(String msg, long from, long target
+    public static ProtocolMessage getProtocolMessage(String msg, long from, long target
             , MessageTypeEnum messageType, MessageStatusEnum messateStatus){
-        ProtocalMessage message = new ProtocalMessage(getHeader(messageType, messateStatus, ""), getMessage(msg, from, target));
+        ProtocolMessage message = new ProtocolMessage(getHeader(messageType, messateStatus, ""), getMessage(msg, from, target));
         return message;
     }
 
@@ -48,8 +48,8 @@ public class MessageTool {
      * @param messateStatus
      * @return
      */
-    public static ProtocalMessage getProtocolMessage(MessageTypeEnum messageType, MessageStatusEnum messateStatus, String auth){
-        ProtocalMessage message = new ProtocalMessage(getHeader(messageType,messateStatus,auth), new Message());
+    public static ProtocolMessage getProtocolMessage(MessageTypeEnum messageType, MessageStatusEnum messateStatus, String auth){
+        ProtocolMessage message = new ProtocolMessage(getHeader(messageType,messateStatus,auth), new Message());
         return message;
     }
 
@@ -61,7 +61,7 @@ public class MessageTool {
         return message;
     }
 
-    public static ProtocalMessage getProtocolMessage(MessageTypeEnum messageType, MessageStatusEnum messateStatus){
+    public static ProtocolMessage getProtocolMessage(MessageTypeEnum messageType, MessageStatusEnum messateStatus){
         return getProtocolMessage(messageType, messateStatus, "");
     }
 

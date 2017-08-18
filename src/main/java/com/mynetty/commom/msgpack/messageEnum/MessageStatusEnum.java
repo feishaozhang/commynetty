@@ -14,7 +14,7 @@ public enum MessageStatusEnum {
      */
     AUTH_FAILD((byte)2, "认证失败"),
     /**
-     *
+     * 默认状态
      */
     REQUEST((byte)0, "用户请求状态");
 

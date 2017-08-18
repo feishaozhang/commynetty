@@ -1,7 +1,7 @@
 package com.mynetty.exception;
 
 /**
- * NettyServerException
+ * 异常
  */
 public class NettyServerException extends Exception {
 

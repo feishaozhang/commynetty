@@ -2,7 +2,7 @@ package com.mynetty.commom.msgpack;
 
 import com.mynetty.commom.msgpack.model.Header;
 import com.mynetty.commom.msgpack.model.Message;
-import com.mynetty.commom.msgpack.model.ProtocalMessage;
+import com.mynetty.commom.msgpack.model.ProtocolMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -19,10 +19,10 @@ public class MsgpackEncoder extends MessageToByteEncoder<Object>{
 
     protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf byteBuf) throws Exception {
         MessageBufferPacker msgpack = MessagePack.newDefaultBufferPacker();
-        ProtocalMessage message = null;
+        ProtocolMessage message = null;
       try {
           if(msg != null){
-              message = (ProtocalMessage) msg;
+              message = (ProtocolMessage) msg;
               Header header = message.getHeader();
               Message messageBody = message.getBody();
 
@@ -32,13 +32,13 @@ public class MsgpackEncoder extends MessageToByteEncoder<Object>{
               msgpack.packLong(header.getSessionID());//sessionID
               msgpack.packByte(header.getType());//消息类型
               msgpack.packByte(header.getPriority());//消息优先级
-              msgpack.packByte(header.getStatus());
-              msgpack.packString(header.getAuth());
+              msgpack.packByte(header.getStatus());//消息状态
+              msgpack.packString(header.getAuth());//消息头认证位
 
               if(messageBody != null){
                   msgpack.packLong(messageBody.getFrom());
                   msgpack.packLong(messageBody.getTarget());
-                  msgpack.packString(messageBody.getMessage()==null?"":messageBody.getMessage());
+                  msgpack.packString(messageBody.getMessage() == null? "" : messageBody.getMessage());
               }
               byteBuf.writeBytes(msgpack.toByteArray());
           }
@@ -51,5 +51,6 @@ public class MsgpackEncoder extends MessageToByteEncoder<Object>{
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         logger.error(cause);
+        ctx.fireExceptionCaught(cause);
     }
 }

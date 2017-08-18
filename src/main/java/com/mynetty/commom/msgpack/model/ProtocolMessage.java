@@ -3,14 +3,14 @@ package com.mynetty.commom.msgpack.model;
 /**
  * 传输消息协议
  */
-public class ProtocalMessage {
+public class ProtocolMessage {
     private Header header;//消息头
     private Message body;//消息体
 
-    public ProtocalMessage() {
+    public ProtocolMessage() {
     }
 
-    public ProtocalMessage(Header header, Message body) {
+    public ProtocolMessage(Header header, Message body) {
         this.header = header;
         this.body = body;
     }
