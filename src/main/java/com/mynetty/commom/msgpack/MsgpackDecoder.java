@@ -80,7 +80,6 @@ public class MsgpackDecoder extends MessageToMessageDecoder<ByteBuf>{
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         logger.error(cause);
-        //客户端非正常退出时，需要手动关闭句柄
-        SessionChannelCache.removeSession(ctx.channel().id().asLongText());
+
     }
 }

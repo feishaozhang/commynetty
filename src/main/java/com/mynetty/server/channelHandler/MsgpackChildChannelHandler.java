@@ -5,6 +5,7 @@ import com.mynetty.commom.msgpack.MsgpackDecoder;
 import com.mynetty.commom.msgpack.MsgpackEncoder;
 import com.mynetty.server.Configuration;
 import com.mynetty.server.handleAdapter.AuthLoginChannelAdapter;
+import com.mynetty.server.handleAdapter.CloseChannelAdapter;
 import com.mynetty.server.handleAdapter.HeartBeatRespHandlerAdapter;
 import com.mynetty.server.handleAdapter.ValidateMessageAdapter;
 import com.mynetty.server.handler.DelimiterBasedFrameDecoderServerHandler;
@@ -34,5 +35,6 @@ public class MsgpackChildChannelHandler extends ChannelInitializer<SocketChannel
             socketChannel.pipeline().addLast("readTimeOutHandler", new ReadTimeoutHandler(ClientConfiguration.READ_TIME_OUT));//60秒未收到任何消息判定为掉线
             socketChannel.pipeline().addLast("heartBeatResp", new HeartBeatRespHandlerAdapter());//心跳链
             socketChannel.pipeline().addLast(new MsgpackServerHandler());
+            socketChannel.pipeline().addLast("closeChannelAdapter", new CloseChannelAdapter());//关闭链路时释放资源
         }
 }
