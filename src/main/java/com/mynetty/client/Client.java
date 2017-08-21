@@ -1,21 +1,21 @@
 package com.mynetty.client;
 
+import com.mynetty.client.cache.CacheKey;
 import com.mynetty.client.cache.ClientCache;
 import com.mynetty.client.channeInitializer.MsgpackChannelInitializer;
-import com.mynetty.commom.msgpack.encoderTool.MessageSender;
-import com.mynetty.commom.msgpack.encoderTool.MessageTool;
-import com.mynetty.commom.msgpack.messageEnum.MessageStatusEnum;
-import com.mynetty.commom.msgpack.messageEnum.MessageTypeEnum;
-import com.mynetty.commom.msgpack.model.ProtocolMessage;
+import com.mynetty.client.exception.CommynettyClientException;
+import com.mynetty.client.listener.ClientCallback;
+import com.mynetty.client.listener.ListenerTool;
+import com.mynetty.client.model.ClientStartParams;
 import com.mynetty.engineerModule.BaseComponentStarter;
 import com.mynetty.exception.CommyNettyServerException;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -24,59 +24,112 @@ import java.util.concurrent.TimeUnit;
  * 客户端启动程序
  */
 public class Client {
-    private static Logger logger = Logger.getLogger(Client.class);
-    private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+    private static final Logger logger = Logger.getLogger(Client.class);
+    private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
-    public static void main(String[] args){
-        BaseComponentStarter bStarter = BaseComponentStarter.getBaseComponentStarter();
-        //start base engineer
-        bStarter.start(ClientConfiguration.log4jPath);
+    private static Client instance;
+    /**客户端是否关闭*/
+    private volatile boolean isStop = true;
 
-        final Client client = new Client();
-//        for (int i=0; i< 300;i++){
-            new Thread(new Runnable() {
-                public void run() {
-                    try{
-                        client.initUserInfo();
-                        client.connect(ClientConfiguration.SERVER_HOSET,ClientConfiguration.SERVER_PORT);
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
-//            try {
-//                Thread.sleep(100);
-//            }catch (Exception e){
-//            }
-//        }
-        client.startWriter();
+    private ClientCallback listener;
+    private ClientStartParams confiParams;
+    /**防并发锁,因为是单例模式，所以只有一个实体类，粒度不用整个类*/
+    private static final Object  clientLocker = new Object();
+
+    private Client(){
+
     }
 
     /**
-     * 发送文字板
+     * 获得客户端实例
      */
-    public void startWriter(){
-        try{
-            while (true){
-                System.out.println("请输入消息");
-                Scanner s = new Scanner(System.in);
-                String line  = s.nextLine();
-                long userId = Long.parseLong(ClientCache.getCacheValue("userId",String.class));
-                ProtocolMessage pm = MessageTool.getProtocolMessage(line,userId,2000, MessageTypeEnum.MESSAGE_BUSSINESS, MessageStatusEnum.REQUEST);
-                Channel channel = (Channel)ClientCache.getCacheValue("channel");
-                MessageSender.sendMessage(channel,pm);
+    public static Client getInstance(){
+        if (instance == null) {
+            synchronized (clientLocker){
+                if(instance == null){
+                    instance = new Client();
+                }
             }
-        }catch (Exception e){
-            e.printStackTrace();
         }
+        return instance;
     }
 
-    public void initUserInfo(){
-        //将用户ID放入缓存
-        ClientCache.addCacheValue("userId", "1000");
+    /**
+     * 外部启动接口
+     * @param params
+     * @see ClientStartParams
+     * @throws CommynettyClientException
+     */
+    public void start(ClientStartParams params, ClientCallback listener) throws CommynettyClientException{
+            if(isStop){
+                synchronized (clientLocker){
+                if(isStop){
+                    if(StringUtils.isBlank(params.getHost())){
+                        throw new CommynettyClientException("ClientStartParams's host is Null please fill it up");
+                    }
+                    if(StringUtils.isBlank(params.getAuth())){
+                        throw new CommynettyClientException("ClientStartParams's auth is Null please fill it up");
+                    }
+                    if(params.getPort() == 0){
+                        logger.warn("your server port is 0!");
+                    }
+                    if(params.getCrcCode() == 0){
+                        logger.warn("your crcCode is 0 !");
+                    }
+
+                    this.listener = listener;
+                    this.confiParams = params;
+                    ClientCache.addCacheValue(CacheKey.USER_ID, params.getAuth());
+                    startBaseComponent();
+                    startConnect(params);
+                    isStop = false;
+                }
+                else{
+                    logger.warn("Server is get started No need to start again!");
+                }
+                }
+            }
+            else{
+                logger.warn("Server is get started No need to start again!");
+            }
     }
 
-    public static void connect(String host, int port )throws CommyNettyServerException {
+    /**
+     * 启动基础组件
+     */
+    public static void startBaseComponent(){
+        BaseComponentStarter bStarter = BaseComponentStarter.getBaseComponentStarter();
+        bStarter.start(ClientConfiguration.log4jPath);
+    }
+
+    /**
+     * 连接消息服务器
+     */
+    public void startConnect(final ClientStartParams params) throws  CommynettyClientException{
+            new Thread(new Runnable() {
+                public void run() {
+                     connect(params.getHost(),params.getPort(), listener);
+                }
+            }).start();
+
+    }
+
+    /**
+     * 初始化用户数据
+     */
+    public void initUserInfo(String userId, ChannelFuture channelFuture){
+        ClientCache.addCacheValue(CacheKey.RECONNECT_COUNT,ClientConfiguration.RECONNECT_COUNT);
+        ClientCache.addCacheValue(CacheKey.CONNECTED_CHANNEL,channelFuture.channel());
+        ClientCache.addCacheValue(CacheKey.CLIENT_STATUS,0);
+    }
+
+    /**
+     * 连接服务端
+     * @param host
+     * @param port
+     * @throws CommynettyClientException
+     */
+    public void connect( String host, int port, final ClientCallback listener)throws CommynettyClientException {
         EventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap bs = new Bootstrap();
@@ -87,40 +140,76 @@ public class Client {
             ChannelFuture cf = bs.connect(host,port).sync();
             cf.addListener(new ChannelFutureListener() {
                 public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                    ClientCache.addCacheValue("channel",channelFuture.channel());
-                    ClientCache.addCacheValue("clientStatus",0);
 
-                    logger.info("SocketChannel has been Created");
-                }
-            });
-
-
-            cf.channel().closeFuture().sync();
-            logger.info("SocketChannel has benn Closed");
-        }catch (Exception e){
-            throw new CommyNettyServerException("服务器连接异常");
-        }finally {
-            executor.execute(new Runnable() {
-                public void run() {
-                    int  clientStatus = (Integer)ClientCache.getCacheValue("clientStatus");
-                    if(clientStatus == 0){//非退出状态重连
-                        try {
-                            TimeUnit.SECONDS.sleep(5);
-                            try{
-                                connect(ClientConfiguration.SERVER_HOSET,ClientConfiguration.SERVER_PORT);
-                            }catch (Exception e){
-                                e.printStackTrace();
-                                throw new CommyNettyServerException("服务器连接异常");
-                            }
-                        }catch (Exception e){
-                            e.printStackTrace();
-
+                    if(channelFuture.channel().isWritable()){
+                        /**连接成功*/
+                        initUserInfo(confiParams.getAuth(), channelFuture);
+                        logger.info("SocketChannel has been Created");
+                        if(listener != null){
+                              ListenerTool.callBack(listener, ClientCallback.OpType.CONNECT_SUCCESS, "SocketChannel connection is Success");
+                        }
+                    }
+                    else{
+                        if(listener != null){
+                            ListenerTool.callBack(listener, ClientCallback.OpType.CONNECT_FAIL, "SocketChannel connection is  fail");
                         }
                     }
                 }
             });
 
-            group.shutdownGracefully();
+            cf.channel().closeFuture().sync();
+            logger.info("SocketChannel has benn Closed");
+        }catch (Exception e){
+            throw new CommynettyClientException("服务器连接异常");
+        }finally {
+            try{
+                int  clientStatus = (Integer)ClientCache.getCacheValue(CacheKey.CLIENT_STATUS);
+                if(clientStatus == 0){//非退出状态重连){
+                    reconnectToServer(listener);
+                }else{
+                    group.shutdownGracefully();
+                }
+            }catch (Exception e){
+                throw new CommynettyClientException(e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * 重连
+     */
+    public void reconnectToServer(final ClientCallback listener){
+        executor.execute(new Runnable() {
+            public void run() {
+                int  reconnectCount = (Integer)ClientCache.getCacheValue(CacheKey.RECONNECT_COUNT);
+                try {
+                    TimeUnit.SECONDS.sleep(5);
+                    try{
+                        connect(ClientConfiguration.SERVER_HOSET,ClientConfiguration.SERVER_PORT,listener);
+                        ClientCache.addCacheValue(CacheKey.RECONNECT_COUNT, ClientConfiguration.RECONNECT_COUNT);//连接成功后，还原为默认重连数
+                    }catch (Exception e){
+                        e.printStackTrace();
+                        ClientCache.addCacheValue(CacheKey.RECONNECT_COUNT, reconnectCount--);//可重连次数递减
+                        throw new CommyNettyServerException("服务器连接异常");
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+                }
+        });
+    }
+
+    /**
+     * 关闭连接
+     */
+    public void closeConnection() throws CommynettyClientException{
+        if(!isStop){
+            synchronized (clientLocker){
+                if(!isStop){
+                    Channel channel = (Channel) ClientCache.getCacheValue(CacheKey.CONNECTED_CHANNEL);
+                    channel.eventLoop().shutdownGracefully();
+                }
+            }
         }
     }
 }

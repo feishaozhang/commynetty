@@ -4,13 +4,13 @@ public class ClientConfiguration {
     /**
      * 服务器IP地址
      */
-    public static final String SERVER_HOSET = "127.0.0.1";
+    public static String SERVER_HOSET = "127.0.0.1";
 
 //    public static final String SERVER_HOSET = "192.168.159.129";
     /**
      * 服务器端口
      */
-    public static final int SERVER_PORT = 8989;
+    public static int SERVER_PORT = 8989;
     /**
      * log4j配置文件路径
      */
@@ -43,5 +43,10 @@ public class ClientConfiguration {
      *超时未获得请求消息(秒)
      */
     public static int READ_TIME_OUT = 60;
+    /**
+     * 客户端断线重连次数
+     */
+    public static int RECONNECT_COUNT = 5;
+
 
 }

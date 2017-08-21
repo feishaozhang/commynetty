@@ -19,33 +19,22 @@ public class NettyStarter {
      * @throws CommyNettyServerException
      */
     public void bind(int port)throws CommyNettyServerException {
-        /**
-         *  1、Config Server Nio Threads group
-         *  2、NioEventLoopGroup is a set of thread group
-         *  used to process Network event Process
-         *  3、bossGroup used to accept socket connection
-         *  4、workGroup used to transfer data
-         */
+        //Acceptor Thread pool
         EventLoopGroup bossGroup = new NioEventLoopGroup();
+        //write & read Thread pool
         EventLoopGroup workGroup = new NioEventLoopGroup();
-
         try{
-            /**
-             * sbs: used to create NIO  server
-             * sbs.channel()：set ChannelType as NioserverSocketChannel
-             * sbs.childHandler() used to Handle IO events
-             */
             ServerBootstrap sbs = new ServerBootstrap();
             sbs.group(bossGroup,workGroup)
                     .channel(NioServerSocketChannel.class)
                     .option(ChannelOption.SO_BACKLOG, Configuration.SO_BACKLOG_SIZE)
                     .childHandler(new MsgpackChildChannelHandler());
 
-            //Asyn waiting util bind port success
+            //同步绑定端口
             ChannelFuture f  = sbs.bind(port).sync();
             logger.info("Sever get Started");
 
-            //Asyn waiting util close bind port
+            //同步关闭通道
             f.channel().closeFuture().sync();
             logger.info("Sever get Stoped");
 

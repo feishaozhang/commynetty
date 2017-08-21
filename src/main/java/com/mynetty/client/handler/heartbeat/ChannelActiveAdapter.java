@@ -1,5 +1,6 @@
 package com.mynetty.client.handler.heartbeat;
 
+import com.mynetty.client.cache.CacheKey;
 import com.mynetty.client.cache.ClientCache;
 import com.mynetty.commom.msgpack.encoderTool.EncryptTool;
 import com.mynetty.commom.msgpack.encoderTool.MessageBuilder;
@@ -9,6 +10,7 @@ import com.mynetty.commom.msgpack.messageEnum.MessageTypeEnum;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.log4j.Logger;
+import sun.misc.Cache;
 
 /**
  * 客户端心跳Handler
@@ -21,7 +23,7 @@ public class ChannelActiveAdapter extends ChannelHandlerAdapter{
         logger.info("链路激活");
         ClientCache.addCacheValue("channelContext",ctx);
         //链路激活发送验证消息到服务器进行验证，auth为验证码
-        String userId = ClientCache.getCacheValue("userId", String.class);
+        String userId = ClientCache.getCacheValue(CacheKey.USER_ID, String.class);
         long userIdLong = Long.parseLong(userId);
         //加密密钥
         String auth = EncryptTool.encrype(userId);
