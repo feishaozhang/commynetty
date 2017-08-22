@@ -46,7 +46,7 @@ public final class BaseComponentStarter {
                     isStarted = true;
                     return;
                 }
-                logger.error("Component Module has get started");
+//                logger.error("Component Module has get started");
             }
             return;
         }

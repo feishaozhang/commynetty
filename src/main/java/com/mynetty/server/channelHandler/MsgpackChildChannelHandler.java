@@ -25,16 +25,16 @@ public class MsgpackChildChannelHandler extends ChannelInitializer<SocketChannel
 
         @Override
         protected void initChannel(SocketChannel socketChannel) throws Exception {
-            //用于处理半包
-            socketChannel.pipeline().addLast("frameDecoder",new LengthFieldBasedFrameDecoder(65535,0,2,0,2));
-            socketChannel.pipeline().addLast(new MsgpackDecoder());
-            socketChannel.pipeline().addLast("frameEncoder",new LengthFieldPrepender(2));
-            socketChannel.pipeline().addLast(new MsgpackEncoder());
-            socketChannel.pipeline().addLast("messageValidate", new ValidateMessageAdapter());//消息头验证链
-            socketChannel.pipeline().addLast("authLoginChannelAdapter", new AuthLoginChannelAdapter());//登录验证链
-            socketChannel.pipeline().addLast("readTimeOutHandler", new ReadTimeoutHandler(ClientConfiguration.READ_TIME_OUT));//60秒未收到任何消息判定为掉线
-            socketChannel.pipeline().addLast("heartBeatResp", new HeartBeatRespHandlerAdapter());//心跳链
-            socketChannel.pipeline().addLast(new MsgpackServerHandler());
-            socketChannel.pipeline().addLast("closeChannelAdapter", new CloseChannelAdapter());//关闭链路时释放资源
+        //用于处理半包
+        socketChannel.pipeline().addLast("frameDecoder",new LengthFieldBasedFrameDecoder(65535,0,2,0,2));
+        socketChannel.pipeline().addLast(new MsgpackDecoder());
+        socketChannel.pipeline().addLast("frameEncoder",new LengthFieldPrepender(2));
+        socketChannel.pipeline().addLast(new MsgpackEncoder());
+        socketChannel.pipeline().addLast("messageValidate", new ValidateMessageAdapter());//消息头验证链
+        socketChannel.pipeline().addLast("authLoginChannelAdapter", new AuthLoginChannelAdapter());//登录验证链
+        socketChannel.pipeline().addLast("readTimeOutHandler", new ReadTimeoutHandler(ClientConfiguration.READ_TIME_OUT));//60秒未收到任何消息判定为掉线
+        socketChannel.pipeline().addLast("heartBeatResp", new HeartBeatRespHandlerAdapter());//心跳链
+        socketChannel.pipeline().addLast("closeChannelAdapter", new CloseChannelAdapter());//关闭链路时释放资源
+        socketChannel.pipeline().addLast(new MsgpackServerHandler());
         }
-}
+        }

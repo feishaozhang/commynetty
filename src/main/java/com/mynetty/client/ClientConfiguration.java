@@ -4,9 +4,9 @@ public class ClientConfiguration {
     /**
      * 服务器IP地址
      */
-    public static String SERVER_HOSET = "127.0.0.1";
+//    public static String SERVER_HOSET = "127.0.0.1";
 
-//    public static final String SERVER_HOSET = "192.168.159.129";
+    public static final String SERVER_HOSET = "192.168.159.129";
     /**
      * 服务器端口
      */
@@ -34,15 +34,15 @@ public class ClientConfiguration {
     /**
      * 客户端心跳设置
      */
-    public static int HEART_BEAT_DELAY = 100;
+    public static int HEART_BEAT_DELAY = 5;
     /**
      * 客户端发送心跳时间间隔(毫秒)
      */
-    public static int HEART_BEAT_INTERVAL = 5000;
+    public static int HEART_BEAT_INTERVAL = 15000;
     /**
      *超时未获得请求消息(秒)
      */
-    public static int READ_TIME_OUT = 60;
+    public static int READ_TIME_OUT = 100;
     /**
      * 客户端断线重连次数
      */

@@ -21,6 +21,7 @@ public class HeartBeatRespHandlerAdapter extends ChannelHandlerAdapter {
         Header header = message.getHeader();
 
         if((header != null) && (header.getType() == MessageTypeEnum.HEART_BEAT_REQ.getMessageCode())){
+            logger.debug("收到客户端的心跳请求");
             ProtocolMessage pm =  MessageTool.getProtocolMessage(MessageTypeEnum.HEART_BEAT_RES, MessageStatusEnum.REQUEST);
             MessageSender.sendMessage(ctx, pm);
         }

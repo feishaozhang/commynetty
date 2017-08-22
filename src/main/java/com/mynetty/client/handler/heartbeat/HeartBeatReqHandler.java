@@ -31,7 +31,6 @@ public class HeartBeatReqHandler extends ChannelHandlerAdapter{
         if (   (header != null)
             && (header.getType()== MessageTypeEnum.AUTH_CHANNEL_RES.getMessageCode())
             && (header.getStatus() == MessageStatusEnum.AUTH_SUCCESS.getCode())){
-
             if(heartBeat == null) {//避免开启两次的心跳定时器
                 synchronized (heartBeatLocker) {
                     if (heartBeat == null) {

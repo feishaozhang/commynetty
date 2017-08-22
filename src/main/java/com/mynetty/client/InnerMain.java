@@ -10,30 +10,39 @@ import com.mynetty.commom.msgpack.messageEnum.MessageStatusEnum;
 import com.mynetty.commom.msgpack.messageEnum.MessageTypeEnum;
 import com.mynetty.commom.msgpack.model.ProtocolMessage;
 import io.netty.channel.Channel;
+import org.apache.log4j.Logger;
 
 import java.util.Scanner;
 
 public class InnerMain {
-
+    private static Logger logger = Logger.getLogger(InnerMain.class);
+    private static  int currentCount = 0;
     public static void main(String[]  args){
-        int crcCode = 0xccdc0101;
-        String auth = "2000";
+                for (int i=0;i<200;i++){
+                    new Thread(new Runnable() {
+                        public void run() {
+                            int crcCode = 0xccdc0101;
+                            String auth = (currentCount++)+"";
+                            Client client = Client.getInstance();
+                            ClientStartParams parms = new ClientStartParams();
+                            parms.setHost(ClientConfiguration.SERVER_HOSET);
+                            parms.setPort(ClientConfiguration.SERVER_PORT);
+                            parms.setCrcCode(crcCode);
+                            parms.setAuth(auth);
+                            try{
+                                client.startWithTestPattern(parms, new ClientCallback() {
+                                    public void onComplete(OpType opType, String message) {
+//                        sendMessage();
+                                        logger.info("当前1第："+currentCount);
+                                    }
+                                });
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
+            }
 
-        Client client = Client.getInstance();
-        ClientStartParams parms = new ClientStartParams();
-        parms.setHost(ClientConfiguration.SERVER_HOSET);
-        parms.setPort(ClientConfiguration.SERVER_PORT);
-        parms.setCrcCode(crcCode);
-        parms.setAuth(auth);
-        try{
-            client.start(parms, new ClientCallback() {
-                public void onComplete(OpType opType, String message) {
-                            sendMessage();
-                }
-            });
-        }catch (Exception e){
-            e.printStackTrace();
-        }
     }
     /**
      * 发送文字板

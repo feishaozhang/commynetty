@@ -8,7 +8,6 @@ import com.mynetty.client.listener.ClientCallback;
 import com.mynetty.client.listener.ListenerTool;
 import com.mynetty.client.model.ClientStartParams;
 import com.mynetty.engineerModule.BaseComponentStarter;
-import com.mynetty.exception.CommyNettyServerException;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -79,7 +78,10 @@ public class Client {
 
                     this.listener = listener;
                     this.confiParams = params;
+
+                    /**需要设置用户的ID用户校验*/
                     ClientCache.addCacheValue(CacheKey.USER_ID, params.getAuth());
+
                     startBaseComponent();
                     startConnect(params);
                     isStop = false;
@@ -93,6 +95,37 @@ public class Client {
                 logger.warn("Server is get started No need to start again!");
             }
     }
+
+    /**
+     * 外部启动接口
+     * @param params
+     * @see ClientStartParams
+     * @throws CommynettyClientException
+     */
+    public void startWithTestPattern(ClientStartParams params, ClientCallback listener) throws CommynettyClientException{
+                    if(StringUtils.isBlank(params.getHost())){
+                        throw new CommynettyClientException("ClientStartParams's host is Null please fill it up");
+                    }
+                    if(StringUtils.isBlank(params.getAuth())){
+                        throw new CommynettyClientException("ClientStartParams's auth is Null please fill it up");
+                    }
+                    if(params.getPort() == 0){
+                        logger.warn("your server port is 0!");
+                    }
+                    if(params.getCrcCode() == 0){
+                        logger.warn("your crcCode is 0 !");
+                    }
+
+                    this.listener = listener;
+                    this.confiParams = params;
+
+                    /**需要设置用户的ID用户校验*/
+                    ClientCache.addCacheValue(CacheKey.USER_ID, params.getAuth());
+
+                    startBaseComponent();
+                    startConnect(params);
+                    isStop = false;
+                }
 
     /**
      * 启动基础组件
@@ -111,13 +144,12 @@ public class Client {
                      connect(params.getHost(),params.getPort(), listener);
                 }
             }).start();
-
     }
 
     /**
-     * 初始化用户数据
+     * 初始化以及数据缓存
      */
-    public void initUserInfo(String userId, ChannelFuture channelFuture){
+    public void initUserInfo(ChannelFuture channelFuture){
         ClientCache.addCacheValue(CacheKey.RECONNECT_COUNT,ClientConfiguration.RECONNECT_COUNT);
         ClientCache.addCacheValue(CacheKey.CONNECTED_CHANNEL,channelFuture.channel());
         ClientCache.addCacheValue(CacheKey.CLIENT_STATUS,0);
@@ -136,6 +168,7 @@ public class Client {
             bs.group(group).channel(NioSocketChannel.class)
                     .option(ChannelOption.TCP_NODELAY,true)
                     .option(ChannelOption.CONNECT_TIMEOUT_MILLIS,ClientConfiguration.TIME_OUT_MILLIS)
+                    .option(ChannelOption.SO_KEEPALIVE, true)
                     .handler(new MsgpackChannelInitializer());
             ChannelFuture cf = bs.connect(host,port).sync();
             cf.addListener(new ChannelFutureListener() {
@@ -143,7 +176,7 @@ public class Client {
 
                     if(channelFuture.channel().isWritable()){
                         /**连接成功*/
-                        initUserInfo(confiParams.getAuth(), channelFuture);
+                        initUserInfo( channelFuture );
                         logger.info("SocketChannel has been Created");
                         if(listener != null){
                               ListenerTool.callBack(listener, ClientCallback.OpType.CONNECT_SUCCESS, "SocketChannel connection is Success");
@@ -178,24 +211,26 @@ public class Client {
     /**
      * 重连
      */
-    public void reconnectToServer(final ClientCallback listener){
+    public void reconnectToServer(final ClientCallback listener)throws CommynettyClientException{
         executor.execute(new Runnable() {
             public void run() {
-                int  reconnectCount = (Integer)ClientCache.getCacheValue(CacheKey.RECONNECT_COUNT);
-                try {
-                    TimeUnit.SECONDS.sleep(5);
-                    try{
-                        connect(ClientConfiguration.SERVER_HOSET,ClientConfiguration.SERVER_PORT,listener);
-                        ClientCache.addCacheValue(CacheKey.RECONNECT_COUNT, ClientConfiguration.RECONNECT_COUNT);//连接成功后，还原为默认重连数
-                    }catch (Exception e){
+                while(true) {
+                    int reconnectCount = (Integer) ClientCache.getCacheValue(CacheKey.RECONNECT_COUNT);
+                   if(reconnectCount > 0)
+                    try {
+                        TimeUnit.SECONDS.sleep(5);
+                        try {
+                            connect(ClientConfiguration.SERVER_HOSET, ClientConfiguration.SERVER_PORT, listener);
+                            ClientCache.addCacheValue(CacheKey.RECONNECT_COUNT, ClientConfiguration.RECONNECT_COUNT);//连接成功后，还原为默认重连数
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            ClientCache.addCacheValue(CacheKey.RECONNECT_COUNT, reconnectCount--);//可重连次数递减
+                        }
+                    } catch (Exception e) {
                         e.printStackTrace();
-                        ClientCache.addCacheValue(CacheKey.RECONNECT_COUNT, reconnectCount--);//可重连次数递减
-                        throw new CommyNettyServerException("服务器连接异常");
                     }
-                }catch (Exception e){
-                    e.printStackTrace();
                 }
-                }
+            }
         });
     }
 
