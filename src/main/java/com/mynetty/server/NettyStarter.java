@@ -33,7 +33,17 @@ public class NettyStarter {
 
             //同步绑定端口
             ChannelFuture f  = sbs.bind(port).sync();
-            logger.info("Sever get Started");
+            f.addListener(new ChannelFutureListener() {
+                public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                    if(channelFuture.isSuccess()){
+                        logger.info("Sever get Started");
+                    }else
+                    {
+                        logger.error("Sever get Started");
+                    }
+                }
+            });
+
 
             //同步关闭通道
             f.channel().closeFuture().sync();

@@ -7,6 +7,12 @@ import com.mynetty.client.exception.CommynettyClientException;
 import com.mynetty.client.listener.ClientCallback;
 import com.mynetty.client.listener.ListenerTool;
 import com.mynetty.client.model.ClientStartParams;
+import com.mynetty.commom.msgpack.encoderTool.MessageSender;
+import com.mynetty.commom.msgpack.encoderTool.MessageTool;
+import com.mynetty.commom.msgpack.messageEnum.MessageStatusEnum;
+import com.mynetty.commom.msgpack.messageEnum.MessageTypeEnum;
+import com.mynetty.commom.msgpack.model.Message;
+import com.mynetty.commom.msgpack.model.ProtocolMessage;
 import com.mynetty.engineerModule.BaseComponentStarter;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -174,7 +180,7 @@ public class Client {
             cf.addListener(new ChannelFutureListener() {
                 public void operationComplete(ChannelFuture channelFuture) throws Exception {
 
-                    if(channelFuture.channel().isWritable()){
+                    if(channelFuture.isSuccess()){
                         /**连接成功*/
                         initUserInfo( channelFuture );
                         logger.info("SocketChannel has been Created");
@@ -232,6 +238,20 @@ public class Client {
                 }
             }
         });
+    }
+
+    /**
+     * 发送消息
+     * @param msg
+     */
+    public void sendMessage(Message msg){
+        Channel channel = (Channel) ClientCache.getCacheValue(CacheKey.CONNECTED_CHANNEL);
+        if(channel == null){
+            logger.error("未连接服务器!");
+            return;
+        }
+        ProtocolMessage pm = MessageTool.getProtocolMessage(msg.getMessage(),msg.getFrom(),msg.getTarget(), MessageTypeEnum.MESSAGE_BUSSINESS, MessageStatusEnum.REQUEST);
+        MessageSender.sendMessage(channel, pm);
     }
 
     /**

@@ -34,11 +34,11 @@ public class ClientConfiguration {
     /**
      * 客户端心跳设置
      */
-    public static int HEART_BEAT_DELAY = 5;
+    public static int HEART_BEAT_DELAY = 500;
     /**
      * 客户端发送心跳时间间隔(毫秒)
      */
-    public static int HEART_BEAT_INTERVAL = 15000;
+    public static int HEART_BEAT_INTERVAL = 60000;
     /**
      *超时未获得请求消息(秒)
      */
