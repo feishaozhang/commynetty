@@ -8,6 +8,8 @@ import org.apache.log4j.Logger;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * 会话列表
@@ -20,20 +22,30 @@ public class SessionChannelCache {
     private final static Map<String, Channel> channelSessionCache = new ConcurrentHashMap<String, Channel>();
     private final static Map<Long, String > userIdAndChannelIdMapping = new ConcurrentHashMap<Long, String>();
 
+    private static final ReadWriteLock lock = new ReentrantReadWriteLock();
+
     /**
      * 添加Channel
      * @param userID channelId 连接的ID
      * @param channel 会话channel
      */
     public static void addSession(long userID ,Channel channel){
-        ChannelId channelId = channel.id();
-        if(userIdAndChannelIdMapping.containsKey(userID)){
-            if(userIdAndChannelIdMapping.get(userID) == channelId.asLongText()){
-                return ;
+        lock.writeLock().lock();
+        try{
+            ChannelId channelId = channel.id();
+            if(userIdAndChannelIdMapping.containsKey(userID)){
+                if(userIdAndChannelIdMapping.get(userID) == channelId.asLongText()){
+                    return ;
+                }
             }
+            userIdAndChannelIdMapping.put(userID, channelId.asLongText());
+            channelSessionCache.put(channelId.asLongText(), channel);
+            logger.info("当前的连接数是："+userIdAndChannelIdMapping.size());
+        }catch (Exception e){
+            logger.error(e);
+        }finally {
+            lock.writeLock().unlock();
         }
-        userIdAndChannelIdMapping.put(userID, channelId.asLongText());
-        channelSessionCache.put(channelId.asLongText(), channel);
     }
 
     /**
@@ -41,13 +53,21 @@ public class SessionChannelCache {
      * @param userId userId
      */
     public static void removeSession(Long userId){
-        if(userIdAndChannelIdMapping.containsKey(userId)){
-            String channelId = userIdAndChannelIdMapping.get(userId);
-            userIdAndChannelIdMapping.remove(userId);
-            if(channelSessionCache.containsKey(channelId)){
-                channelSessionCache.remove(channelId);
+        lock.writeLock().lock();
+        try{
+            if(userIdAndChannelIdMapping.containsKey(userId)){
+                String channelId = userIdAndChannelIdMapping.get(userId);
+                userIdAndChannelIdMapping.remove(userId);
+                if(channelSessionCache.containsKey(channelId)){
+                    channelSessionCache.remove(channelId);
+                }
             }
+        }catch (Exception e){
+            logger.error(e);
+        }finally {
+            lock.writeLock().unlock();
         }
+
     }
 
 
@@ -56,6 +76,8 @@ public class SessionChannelCache {
      * @param channelId
      */
     public static void removeSession(String channelId){
+        lock.writeLock().lock();
+        try{
         if(channelSessionCache.containsKey(channelId)){
             channelSessionCache.remove(channelId);
             if(userIdAndChannelIdMapping.containsValue(channelId)){
@@ -63,6 +85,12 @@ public class SessionChannelCache {
                 values.remove(channelId);
             }
         }
+        }catch (Exception e){
+            logger.error(e);
+        }finally {
+            lock.writeLock().unlock();
+        }
+
     }
 
     /**
@@ -71,11 +99,20 @@ public class SessionChannelCache {
      * @return
      */
     public static Channel getSession(long userId){
+        lock.readLock().lock();
+        Channel channel = null;
+        try{
         if(!userIdAndChannelIdMapping.containsKey(userId)){
             return null;
         }
-        String channelId = userIdAndChannelIdMapping.get(userId);
-        return channelSessionCache.get(channelId);
+            String channelId= userIdAndChannelIdMapping.get(userId);
+            channel = channelSessionCache.get(channelId);
+        }catch (Exception e){
+            logger.error(e);
+        }finally {
+            lock.readLock().unlock();
+        }
+        return channel;
     }
 
     /**
@@ -84,15 +121,30 @@ public class SessionChannelCache {
      * @return
      */
     public static Channel getSession(String channelId){
+        lock.readLock().lock();
+        Channel channel = null;
+        try{
         if(channelSessionCache.containsKey(channelId)){
-            return channelSessionCache.get(channelId);
+            channel =  channelSessionCache.get(channelId);
         }
-        return null;
+        }catch (Exception e){
+            logger.error(e);
+        }finally {
+            lock.readLock().unlock();
+        }
+        return channel;
     }
 
     public static void resetSession(){
+        lock.writeLock().lock();
+        try{
         channelSessionCache.clear();
         logger.info("Session 被重置");
+        }catch (Exception e){
+            logger.error(e);
+        }finally {
+            lock.writeLock().unlock();
+        }
     }
 
 

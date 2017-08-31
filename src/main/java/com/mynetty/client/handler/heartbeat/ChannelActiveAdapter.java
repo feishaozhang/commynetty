@@ -12,6 +12,8 @@ import io.netty.channel.ChannelHandlerContext;
 import org.apache.log4j.Logger;
 import sun.misc.Cache;
 
+import java.util.Random;
+
 /**
  * 客户端心跳Handler
  */
@@ -24,6 +26,14 @@ public class ChannelActiveAdapter extends ChannelHandlerAdapter{
         ClientCache.addCacheValue("channelContext",ctx);
         //链路激活发送验证消息到服务器进行验证，auth为验证码
         String userId = ClientCache.getCacheValue(CacheKey.USER_ID, String.class);
+        logger.info("链路激活"+userId);
+
+        /**test start*/
+//        Random r = new Random();
+//        String userId = r.nextInt(1000000)+"";
+//        logger.info("当前ID："+userId);
+        /**test end*/
+
         long userIdLong = Long.parseLong(userId);
         //加密密钥
         String auth = EncryptTool.encrype(userId);

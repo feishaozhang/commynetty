@@ -1,6 +1,5 @@
 package com.mynetty.server.handleAdapter;
 
-import com.mynetty.commom.msgpack.model.Header;
 import com.mynetty.commom.msgpack.model.ProtocolConfig;
 import com.mynetty.commom.msgpack.model.ProtocolMessage;
 import io.netty.channel.ChannelHandlerAdapter;

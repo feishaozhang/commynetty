@@ -33,5 +33,13 @@ public class Configuration {
      * 固定字符解码器包大小
      */
     public static int FIXED_LENGTH_SIZE = 20;
+    /**
+     *超时未获得请求消息(秒)
+     */
+    public static int READ_TIME_OUT = 100;
+    /**
+     * 服务器当前用户数
+     */
+    public static int SERVER_CORRENT_CONNECT_COUNT = 0;
 
 }

@@ -76,7 +76,7 @@ public class Client {
                         throw new CommynettyClientException("ClientStartParams's auth is Null please fill it up");
                     }
                     if(params.getPort() == 0){
-                        logger.warn("your server port is 0!");
+                        logger.warn("your server port  is 0!");
                     }
                     if(params.getCrcCode() == 0){
                         logger.warn("your crcCode is 0 !");
@@ -109,29 +109,29 @@ public class Client {
      * @throws CommynettyClientException
      */
     public void startWithTestPattern(ClientStartParams params, ClientCallback listener) throws CommynettyClientException{
-                    if(StringUtils.isBlank(params.getHost())){
-                        throw new CommynettyClientException("ClientStartParams's host is Null please fill it up");
-                    }
-                    if(StringUtils.isBlank(params.getAuth())){
-                        throw new CommynettyClientException("ClientStartParams's auth is Null please fill it up");
-                    }
-                    if(params.getPort() == 0){
-                        logger.warn("your server port is 0!");
-                    }
-                    if(params.getCrcCode() == 0){
-                        logger.warn("your crcCode is 0 !");
-                    }
+        if(StringUtils.isBlank(params.getHost())){
+            throw new CommynettyClientException("ClientStartParams' s host is Null please fill it up");
+        }
+        if(StringUtils.isBlank(params.getAuth())){
+            throw new CommynettyClientException("ClientStartParams's auth is Null please fill it up");
+        }
+        if(params.getPort() == 0){
+            logger.warn("your server port is 0!");
+        }
+        if(params.getCrcCode() == 0){
+            logger.warn("your crcCode is 0 !");
+        }
+        this.listener = listener;
+        this.confiParams = params;
 
-                    this.listener = listener;
-                    this.confiParams = params;
-
-                    /**需要设置用户的ID用户校验*/
-                    ClientCache.addCacheValue(CacheKey.USER_ID, params.getAuth());
-
-                    startBaseComponent();
-                    startConnect(params);
-                    isStop = false;
-                }
+        /**重置客户端配置文件*/
+        resetClientProperties();
+        /**需要设置用户的ID用户校验*/
+        ClientCache.addCacheValue(CacheKey.USER_ID, params.getAuth());
+        startBaseComponent();
+        startConnect(params);
+        isStop = false;
+    }
 
     /**
      * 启动基础组件
@@ -179,7 +179,6 @@ public class Client {
             ChannelFuture cf = bs.connect(host,port).sync();
             cf.addListener(new ChannelFutureListener() {
                 public void operationComplete(ChannelFuture channelFuture) throws Exception {
-
                     if(channelFuture.isSuccess()){
                         /**连接成功*/
                         initUserInfo( channelFuture );
@@ -203,14 +202,23 @@ public class Client {
         }finally {
             try{
                 int  clientStatus = (Integer)ClientCache.getCacheValue(CacheKey.CLIENT_STATUS);
-                if(clientStatus == 0){//非退出状态重连){
-                    reconnectToServer(listener);
-                }else{
-                    group.shutdownGracefully();
-                }
+//                if(clientStatus == 0){//非退出状态重连){
+//                    reconnectToServer(listener);
+//                }else{
+//                    group.shutdownGracefully();
+//                }
             }catch (Exception e){
                 throw new CommynettyClientException(e.getMessage());
             }
+        }
+    }
+
+    /**
+     * 重置客户端参数
+     */
+    public void resetClientProperties(){
+        if(ClientCache.getAll().size() > 0){
+            ClientCache.resetCacheValue();
         }
     }
 

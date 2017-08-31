@@ -32,7 +32,6 @@ public class AuthLoginChannelAdapter extends ChannelHandlerAdapter {
                 SessionChannelCache.addSession(userId ,ctx.channel());
                 ProtocolMessage newMsg = MessageTool.getProtocolMessage("0",0L,0L,MessageTypeEnum.AUTH_CHANNEL_RES, MessageStatusEnum.AUTH_SUCCESS);
                 MessageSender.sendMessage(ctx.channel(), newMsg);
-                logger.info("==>用户验证成功,缓存Session！");
             }
             else{
                 //验证失败断开链路，不继续等待。

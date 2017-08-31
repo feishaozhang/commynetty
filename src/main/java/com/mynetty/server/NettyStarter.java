@@ -29,6 +29,7 @@ public class NettyStarter {
                     .channel(NioServerSocketChannel.class)
                     .option(ChannelOption.SO_BACKLOG, Configuration.SO_BACKLOG_SIZE)
                     .option(ChannelOption.SO_KEEPALIVE, true)
+                    .option(ChannelOption.TCP_NODELAY,true)
                     .childHandler(new MsgpackChildChannelHandler());
 
             //同步绑定端口

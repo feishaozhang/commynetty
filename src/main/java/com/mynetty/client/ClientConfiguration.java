@@ -4,13 +4,15 @@ public class ClientConfiguration {
     /**
      * 服务器IP地址
      */
-//    public static String SERVER_HOSET = "127.0.0.1";
+    public static String SERVER_HOSET = "127.0.0.1";
+//    public static String SERVER_HOSET = "1g82189w85.iok.la";
 
-    public static final String SERVER_HOSET = "192.168.159.129";
+//    public static final String SERVER_HOSET = "192.168.159.129";
     /**
      * 服务器端口
      */
     public static int SERVER_PORT = 8989;
+//    public static int SERVER_PORT = 30528;
     /**
      * log4j配置文件路径
      */
@@ -36,13 +38,9 @@ public class ClientConfiguration {
      */
     public static int HEART_BEAT_DELAY = 500;
     /**
-     * 客户端发送心跳时间间隔(毫秒)
+     * 客户端发送心跳时间间隔(毫秒)5分钟
      */
-    public static int HEART_BEAT_INTERVAL = 60000;
-    /**
-     *超时未获得请求消息(秒)
-     */
-    public static int READ_TIME_OUT = 100;
+    public static int HEART_BEAT_INTERVAL = 5*60*1000;
     /**
      * 客户端断线重连次数
      */

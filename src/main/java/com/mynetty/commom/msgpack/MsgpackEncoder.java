@@ -25,7 +25,7 @@ public class MsgpackEncoder extends MessageToByteEncoder<Object>{
               Header header = message.getHeader();
               Message messageBody = message.getBody();
 
-              //编码
+              //编码 4+4+8+1+1+1+
               msgpack.packInt(header.getCrcCode());//校验头
               msgpack.packInt(header.getLength());//消息长度
               msgpack.packLong(header.getSessionID());//sessionID

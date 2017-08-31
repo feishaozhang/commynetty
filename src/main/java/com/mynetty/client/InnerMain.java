@@ -16,13 +16,12 @@ import java.util.Scanner;
 
 public class InnerMain {
     private static Logger logger = Logger.getLogger(InnerMain.class);
-    private static  int currentCount = 0;
     public static void main(String[]  args){
-                for (int i=0;i<200;i++){
-                    new Thread(new Runnable() {
-                        public void run() {
+//                for (int i=0;i<1;i++){
+//                    new Thread(new Runnable() {
+//                        public void run() {
                             int crcCode = 0xccdc0101;
-                            String auth = (currentCount++)+"";
+                            String auth = "2000";
                             Client client = Client.getInstance();
                             ClientStartParams parms = new ClientStartParams();
                             parms.setHost(ClientConfiguration.SERVER_HOSET);
@@ -32,16 +31,16 @@ public class InnerMain {
                             try{
                                 client.startWithTestPattern(parms, new ClientCallback() {
                                     public void onComplete(OpType opType, String message) {
-//                        sendMessage();
-                                        logger.info("当前1第："+currentCount);
+                        sendMessage();
+//                                        logger.info("当前1第："+currentCount);
                                     }
                                 });
                             }catch (Exception e){
                                 e.printStackTrace();
                             }
-                        }
-                    }).start();
-            }
+//                        }
+//                    }).start();
+//            }
 
     }
     /**
@@ -54,7 +53,7 @@ public class InnerMain {
                 Scanner s = new Scanner(System.in);
                 String line  = s.nextLine();
                 long userId = Long.parseLong(ClientCache.getCacheValue(CacheKey.USER_ID,String.class));
-                ProtocolMessage pm = MessageTool.getProtocolMessage(line,userId,1000, MessageTypeEnum.MESSAGE_BUSSINESS, MessageStatusEnum.REQUEST);
+                ProtocolMessage pm = MessageTool.getProtocolMessage(line,userId,3000, MessageTypeEnum.MESSAGE_BUSSINESS, MessageStatusEnum.REQUEST);
                 Channel channel = (Channel)ClientCache.getCacheValue(CacheKey.CONNECTED_CHANNEL);
                 MessageSender.sendMessage(channel,pm);
             }

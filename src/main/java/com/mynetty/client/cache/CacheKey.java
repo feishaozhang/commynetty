@@ -18,7 +18,5 @@ public class CacheKey {
      * 客户端状态,0启动 1 终止
      */
     public static String CLIENT_STATUS = "clientStatus";
-    /**
-     *
-     */
+
 }

@@ -2,18 +2,23 @@ package com.mynetty.client.cache;
 
 import org.apache.log4j.Logger;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * 运行期缓存
  */
 public class ClientCache {
     private static final Logger logger = Logger.getLogger(ClientCache.class);
+    private static final ReadWriteLock lock = new ReentrantReadWriteLock();
     /**
      * 运行期数据缓存
      */
-    private static Map<String, Object> runtimeCache = new ConcurrentHashMap<String, Object>();
+    private static Map<String, Object> runtimeCache = new HashMap<String, Object>();
 
     /**
      * 添加缓存数据
@@ -21,12 +26,20 @@ public class ClientCache {
      * @param value 会话channel
      */
     public static void addCacheValue(String key ,Object value){
-        if(runtimeCache.containsKey(key)){
-            if(runtimeCache.get(key) == value){
-                return ;
+        lock.writeLock().lock();
+        try{
+            if(runtimeCache.containsKey(key)){
+                if(runtimeCache.get(key) == value){
+                    return ;
+                }
             }
+            runtimeCache.put(key, value);
+        }catch (Exception e){
+            logger.error(e);
+        }finally {
+            lock.writeLock().unlock();
         }
-        runtimeCache.put(key, value);
+
     }
 
     /**
@@ -34,9 +47,17 @@ public class ClientCache {
      * @param key
      */
     public static void removeCacheValue(String key){
-        if(runtimeCache.containsKey(key)){
-            runtimeCache.remove(key);
+        lock.writeLock().lock();
+        try {
+            if(runtimeCache.containsKey(key)){
+                runtimeCache.remove(key);
+            }
+        }catch (Exception e){
+            logger.error(e);
+        }finally {
+            lock.writeLock().unlock();
         }
+
     }
 
     /**
@@ -45,10 +66,19 @@ public class ClientCache {
      * @return
      */
     public static Object getCacheValue(String key){
-        if(!runtimeCache.containsKey(key)){
-            return null;
+        Object data = null;
+        lock.readLock().lock();
+        try {
+            if(!runtimeCache.containsKey(key)){
+                return null;
+            }
+            data = runtimeCache.get(key);
+        }catch (Exception e){
+            logger.error(e);
+        } finally {
+            lock.readLock().unlock();
         }
-        return runtimeCache.get(key);
+        return data;
     }
 
     /**
@@ -59,15 +89,23 @@ public class ClientCache {
      * @return T
      */
     public static <T> T getCacheValue(String key, Class<T> t){
-        if(!runtimeCache.containsKey(key)){
-            return null;
-        }
+        lock.readLock().lock();
         T value = null;
-        try{
-            value = t.cast((runtimeCache.get(key)));
+        try {
+            if(!runtimeCache.containsKey(key)){
+                return null;
+            }
+            try{
+                value = t.cast((runtimeCache.get(key)));
+            }catch (Exception e){
+                logger.error(e);
+            }
         }catch (Exception e){
             logger.error(e);
+        }finally {
+            lock.readLock().unlock();
         }
+
         return value;
     }
 
@@ -75,10 +113,26 @@ public class ClientCache {
      * 重置CacheValue
      */
     public static void resetCacheValue(){
-        runtimeCache.clear();
+        lock.writeLock().lock();
+        try {
+            runtimeCache.clear();
+        }catch (Exception e){
+            logger.error(e);
+        }finally {
+            lock.writeLock().unlock();
+        }
     }
 
-    private static Map<String, Object>  getAll(){
-       return runtimeCache;
+    public static Map<String, Object>  getAll(){
+        lock.readLock().lock();
+        Map<String, Object> data = null;
+        try{
+            data = runtimeCache;
+        }catch (Exception e){
+            logger.error(e);
+        }finally {
+            lock.readLock().unlock();
+        }
+       return data;
     }
 }
