@@ -34,7 +34,7 @@ public class SessionChannelCache {
         try{
             ChannelId channelId = channel.id();
             if(userIdAndChannelIdMapping.containsKey(userID)){
-                if(userIdAndChannelIdMapping.get(userID) == channelId.asLongText()){
+                if(userIdAndChannelIdMapping.get(userID).equals(channelId.asLongText())){
                     return ;
                 }
             }

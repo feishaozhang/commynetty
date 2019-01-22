@@ -1,5 +1,6 @@
 package com.mynetty.server.handleAdapter;
 
+import com.mynetty.client.exception.CommynettyClientException;
 import com.mynetty.commom.msgpack.encoderTool.MessageSender;
 import com.mynetty.commom.msgpack.encoderTool.MessageTool;
 import com.mynetty.commom.msgpack.messageEnum.MessageStatusEnum;
@@ -20,13 +21,20 @@ public class AuthLoginChannelAdapter extends ChannelHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        ProtocolMessage message = (ProtocolMessage)msg;
+    	ProtocolMessage message = null;
+    	if(msg instanceof ProtocolMessage){
+    		message = (ProtocolMessage)msg;
+    	}else{
+    		throw new CommynettyClientException("消息类型异常");
+    	}
+    	
+        
         //返回心跳应答消息
         Header header = message.getHeader();
         //验证串
-        String auth = header.getAuth();
         //客户端发起验证
         if ( (header != null) && ( header.getType() == MessageTypeEnum.AUTH_CHANNEL_REQ.getMessageCode() )){
+        	String auth = header.getAuth();
             if(authUserConnection(auth)){ //用户验证携带用户参数进行验证
                 long userId = Long.parseLong(header.getAuth());
                 SessionChannelCache.addSession(userId ,ctx.channel());

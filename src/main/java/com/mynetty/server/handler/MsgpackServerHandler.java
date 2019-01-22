@@ -105,9 +105,8 @@ public class MsgpackServerHandler extends ChannelHandlerAdapter{
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.info("Error occur "+cause.getCause()+"__________"+cause.getMessage()+"____"+cause.toString()+"_____"+cause.getStackTrace().toString());
+        logger.info("Error occur ");
         ctx.close();
-
     }
 
 }

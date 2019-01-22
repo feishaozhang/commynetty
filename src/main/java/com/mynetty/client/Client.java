@@ -38,7 +38,7 @@ public class Client {
     private static final Logger logger = Logger.getLogger(Client.class);
     private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
-    private static Client instance;
+    private static volatile Client instance;
     /**客户端是否关闭*/
     private volatile boolean isStop = true;
 

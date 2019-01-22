@@ -12,7 +12,7 @@ import java.net.URL;
  */
 public final class BaseComponentStarter {
 
-    private static BaseComponentStarter starter;
+    private static volatile BaseComponentStarter starter;
     /**
      * is baseComponentstarter started
      */
