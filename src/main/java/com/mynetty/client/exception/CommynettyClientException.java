@@ -5,7 +5,12 @@ package com.mynetty.client.exception;
  */
 public class CommynettyClientException extends RuntimeException{
 
-    public CommynettyClientException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public CommynettyClientException() {
     }
 
     public CommynettyClientException(String message) {

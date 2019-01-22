@@ -1,5 +1,7 @@
 package com.mynetty.client.handler.heartbeat;
 
+import org.apache.log4j.Logger;
+
 import com.mynetty.client.cache.CacheKey;
 import com.mynetty.client.cache.ClientCache;
 import com.mynetty.commom.msgpack.encoderTool.EncryptTool;
@@ -7,12 +9,9 @@ import com.mynetty.commom.msgpack.encoderTool.MessageBuilder;
 import com.mynetty.commom.msgpack.encoderTool.MessageSender;
 import com.mynetty.commom.msgpack.messageEnum.MessageStatusEnum;
 import com.mynetty.commom.msgpack.messageEnum.MessageTypeEnum;
+
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import org.apache.log4j.Logger;
-import sun.misc.Cache;
-
-import java.util.Random;
 
 /**
  * 客户端心跳Handler

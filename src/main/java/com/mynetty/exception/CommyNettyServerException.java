@@ -5,7 +5,12 @@ package com.mynetty.exception;
  */
 public class CommyNettyServerException extends Exception {
 
-    public CommyNettyServerException(String message) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public CommyNettyServerException(String message) {
         super(message);
     }
 }

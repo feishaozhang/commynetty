@@ -1,13 +1,14 @@
 package com.mynetty.client.handler;
 
+import org.apache.log4j.Logger;
+
 import com.mynetty.client.ClientConfiguration;
 import com.mynetty.commom.msgpack.encoderTool.MessageSender;
-import com.sun.xml.internal.ws.resources.SenderMessages;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import org.apache.log4j.Logger;
 
 /**
      * LineBasedFrameDecoderHandler used to handle Readable message From channel
